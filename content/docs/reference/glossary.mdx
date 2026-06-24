@@ -4,11 +4,13 @@ description: Short definitions for common Gorbagana and SVM terms.
 icon: BookMarked
 ---
 
+import { Braces, ClipboardList, FileCode, GitCompareArrows } from 'lucide-react';
+
 Common terms used across the Gorbagana docs.
 
 ## Network terms
 
-<ReferenceList items={[
+<ReferenceList valueType="text" items={[
   {
     label: "Gorbagana",
     value: "A live Solana-derived Layer 1 using the SVM runtime and native GOR.",
@@ -49,11 +51,66 @@ Common terms used across the Gorbagana docs.
     value: "A longer network period that groups many slots.",
     copy: false,
   },
+  {
+    label: "Commitment",
+    value: "A confirmation level a client requests when reading or confirming network state, such as processed, confirmed, or finalized.",
+    copy: false,
+  },
+  {
+    label: "Recent blockhash",
+    value: "A recent ledger hash included in a transaction to keep it fresh and prevent old signed transactions from being reused.",
+    copy: false,
+  },
+]} />
+
+## Wallet and transaction terms
+
+<ReferenceList valueType="text" items={[
+  {
+    label: "Wallet",
+    value: "Software or hardware that controls keys and asks the user to sign transactions.",
+    copy: false,
+  },
+  {
+    label: "Keypair",
+    value: "A public key and private key pair used to control an account or authority.",
+    copy: false,
+  },
+  {
+    label: "Transaction",
+    value: "A signed message containing one or more instructions for the network to execute atomically.",
+    copy: false,
+  },
+  {
+    label: "Instruction",
+    value: "A single program call inside a transaction, including the program ID and accounts the program can read or write.",
+    copy: false,
+  },
+  {
+    label: "Signature",
+    value: "A cryptographic proof that a required signer approved the transaction message.",
+    copy: false,
+  },
+  {
+    label: "Signer",
+    value: "An account whose private key signed the transaction message.",
+    copy: false,
+  },
+  {
+    label: "Fee payer",
+    value: "The signer that pays the transaction fee for a submitted transaction.",
+    copy: false,
+  },
+  {
+    label: "Rent",
+    value: "The minimum balance required to keep account data stored on-chain. Solana tooling may still call this rent.",
+    copy: false,
+  },
 ]} />
 
 ## Token terms
 
-<ReferenceList items={[
+<ReferenceList valueType="text" items={[
   {
     label: "Native GOR",
     value: "The native Gorbagana token used for fees, transfers, and program deployments.",
@@ -62,6 +119,11 @@ Common terms used across the Gorbagana docs.
   {
     label: "Base units",
     value: "The smallest native GOR units. One GOR has 1,000,000,000 base units.",
+    copy: false,
+  },
+  {
+    label: "Lamports",
+    value: "The Solana tooling name for native base units. On Gorbagana, treat lamports as GOR base units.",
     copy: false,
   },
   {
@@ -74,11 +136,26 @@ Common terms used across the Gorbagana docs.
     value: "The app used to move between Solana GOR and native GOR.",
     copy: false,
   },
+  {
+    label: "Mint",
+    value: "An SPL token definition account that controls token supply, decimals, and mint authority.",
+    copy: false,
+  },
+  {
+    label: "Token account",
+    value: "An account that holds a balance for one token mint and one owner.",
+    copy: false,
+  },
+  {
+    label: "Associated token account",
+    value: "The standard token account address derived from a wallet, token mint, and token program.",
+    copy: false,
+  },
 ]} />
 
 ## Program terms
 
-<ReferenceList items={[
+<ReferenceList valueType="text" items={[
   {
     label: "Account",
     value: "An addressable on-chain record that stores lamports, owner, executable flag, and optional data.",
@@ -110,13 +187,13 @@ Common terms used across the Gorbagana docs.
     copy: false,
   },
   {
-    label: "PDA",
-    value: "A Program Derived Address. Programs can sign for PDAs derived from their program ID and seeds.",
+    label: "Buffer account",
+    value: "A temporary account the upgradeable loader uses while uploading program bytes.",
     copy: false,
   },
   {
-    label: "Signer",
-    value: "An account that signed the transaction message.",
+    label: "PDA",
+    value: "A Program Derived Address. Programs can sign for PDAs derived from their program ID and seeds.",
     copy: false,
   },
   {
@@ -128,7 +205,7 @@ Common terms used across the Gorbagana docs.
 
 ## Operator terms
 
-<ReferenceList items={[
+<ReferenceList valueType="text" items={[
   {
     label: "RPC node",
     value: "A node configured to serve JSON-RPC requests for clients, apps, and scripts.",
@@ -154,21 +231,41 @@ Common terms used across the Gorbagana docs.
     value: "A gossip address a node uses to discover the network.",
     copy: false,
   },
+  {
+    label: "Vote account",
+    value: "An on-chain account that records validator votes and receives stake delegation.",
+    copy: false,
+  },
+  {
+    label: "Vote authority",
+    value: "The signer allowed to vote for a vote account.",
+    copy: false,
+  },
+  {
+    label: "Withdraw authority",
+    value: "The authority that controls vote account withdrawals and sensitive vote-account changes.",
+    copy: false,
+  },
+  {
+    label: "Identity account",
+    value: "The validator identity account used by the validator process to identify itself and pay operational fees.",
+    copy: false,
+  },
 ]} />
 
 ## Related docs
 
 <Cards>
-  <Card title="Addresses" href="/docs/reference/addresses">
+  <Card icon={<Braces />} title="Addresses" href="/docs/reference/addresses">
     Copy endpoints, links, token values, and community resources.
   </Card>
-  <Card title="Developer cheat sheet" href="/docs/reference/cheat-sheet">
+  <Card icon={<ClipboardList />} title="Developer cheat sheet" href="/docs/reference/cheat-sheet">
     Copy common commands and network values.
   </Card>
-  <Card title="Gorbagana and Solana" href="/docs/concepts/solana-compatibility">
+  <Card icon={<GitCompareArrows />} title="Gorbagana and Solana" href="/docs/concepts/solana-compatibility">
     Review what carries over from Solana and what changes on Gorbagana.
   </Card>
-  <Card title="Deploy programs" href="/docs/build/deploy-programs">
+  <Card icon={<FileCode />} title="Deploy programs" href="/docs/build/deploy-programs">
     Learn Program ID, ProgramData, upgrade authority, and close behavior.
   </Card>
 </Cards>

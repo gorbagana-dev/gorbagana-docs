@@ -12,16 +12,21 @@ type ReferenceItem = {
   description?: string;
   href?: string;
   copy?: boolean;
+  valueType?: ReferenceValueType;
 };
+
+type ReferenceValueType = 'code' | 'text';
 
 type ReferenceListProps = {
   items: ReferenceItem[];
   columns?: 'one' | 'two';
+  valueType?: ReferenceValueType;
 };
 
 export function ReferenceList({
   items,
   columns = 'one',
+  valueType = 'code',
 }: ReferenceListProps) {
   return (
     <div
@@ -31,13 +36,23 @@ export function ReferenceList({
       )}
     >
       {items.map((item) => (
-        <ReferenceListItem key={`${item.label}-${item.value}`} item={item} />
+        <ReferenceListItem
+          key={`${item.label}-${item.value}`}
+          item={item}
+          valueType={item.valueType ?? valueType}
+        />
       ))}
     </div>
   );
 }
 
-function ReferenceListItem({ item }: { item: ReferenceItem }) {
+function ReferenceListItem({
+  item,
+  valueType,
+}: {
+  item: ReferenceItem;
+  valueType: ReferenceValueType;
+}) {
   const allowCopy = item.copy !== false;
   const [copied, onCopy] = useCopyButton(() =>
     navigator.clipboard.writeText(item.value),
@@ -50,7 +65,7 @@ function ReferenceListItem({ item }: { item: ReferenceItem }) {
           <div className="text-xs font-medium uppercase tracking-wide text-fd-muted-foreground">
             {item.label}
           </div>
-          <ReferenceValue item={item} />
+          <ReferenceValue item={item} valueType={valueType} />
           {item.description ? (
             <div className="mt-1 text-xs leading-relaxed text-fd-muted-foreground">
               {item.description}
@@ -65,16 +80,24 @@ function ReferenceListItem({ item }: { item: ReferenceItem }) {
   );
 }
 
-function ReferenceValue({ item }: { item: ReferenceItem }) {
-  const className =
-    'mt-1 inline-flex min-w-0 max-w-full items-center gap-1 font-mono text-sm leading-relaxed text-fd-foreground';
+function ReferenceValue({
+  item,
+  valueType,
+}: {
+  item: ReferenceItem;
+  valueType: ReferenceValueType;
+}) {
+  const className = cn(
+    'mt-1 min-w-0 max-w-full text-sm leading-relaxed text-fd-foreground',
+    valueType === 'code' ? 'font-mono' : undefined,
+  );
 
   if (item.href) {
     return (
       <a
         className={cn(
           className,
-          'break-all underline-offset-4 hover:underline',
+          'inline-flex items-center gap-1 break-all underline-offset-4 hover:underline',
         )}
         href={item.href}
         rel="noreferrer"
@@ -84,6 +107,10 @@ function ReferenceValue({ item }: { item: ReferenceItem }) {
         <ExternalLink className="size-3 shrink-0" aria-hidden="true" />
       </a>
     );
+  }
+
+  if (valueType === 'text') {
+    return <p className={className}>{item.value}</p>;
   }
 
   return (
