@@ -1,0 +1,468 @@
+---
+title: Deploy programs
+description: Build, deploy, inspect, update, and manage Solana-compatible programs on Gorbagana.
+icon: FileCode
+---
+
+import { Backpack, Blocks, CheckCircle2, FlaskConical, ReceiptText, Search, ShieldCheck, Terminal, TriangleAlert } from 'lucide-react';
+
+Deploy an SVM program with the Solana CLI, inspect the deployed program account, estimate deployment funding, and manage upgrade authority.
+
+## Command reference
+
+Use these commands for the common deployment lifecycle.
+
+| Task | Command |
+| --- | --- |
+| Build program | `cargo build-sbf` |
+| Deploy new program | `solana program deploy <path_to_program.so>` |
+| Update existing program | `solana program deploy <path_to_program.so>` |
+| Show program metadata | `solana program show <PROGRAM_ID>` |
+| List programs you control | `solana program show --programs` |
+| Transfer upgrade authority | `solana program set-upgrade-authority <PROGRAM_ID> --new-upgrade-authority <path_to_keypair>` |
+| Make immutable | `solana program set-upgrade-authority <PROGRAM_ID> --final` |
+| Close program | `solana program close <PROGRAM_ID> --bypass-warning` |
+
+## What you need
+
+Prepare these before you build or deploy.
+
+| Item | Why |
+| --- | --- |
+| Solana CLI | Builds, deploys, and manages programs |
+| Rust toolchain | Builds native Rust programs |
+| Program binary | The compiled `.so` artifact in `target/deploy` |
+| Funded keypair | Pays deployment, account allocation, and transaction fees |
+| Gorbagana RPC | Points the deploy command at Gorbagana |
+| Explorer | Verifies the signature and program account |
+
+<Callout type="info" title="Anchor projects">
+  If this is an Anchor workspace, you can use the Anchor flow instead. Anchor wraps the same program deployment model with workspace config, IDLs, and generated clients.
+</Callout>
+
+## Before deploy
+
+Check these pages before you send a live deploy or upgrade transaction.
+
+<Cards>
+  <Card icon={<FlaskConical />} title="Testing" href="/docs/build/testing">
+    Run local checks and a small live smoke test.
+  </Card>
+  <Card icon={<ShieldCheck />} title="Security checklist" href="/docs/build/security-checklist">
+    Review accounts, signers, PDAs, CPIs, tokens, and authority.
+  </Card>
+  <Card icon={<Backpack />} title="Wallet setup" href="/docs/build/wallets">
+    Confirm the deployment wallet and native GOR funding.
+  </Card>
+  <Card icon={<Search />} title="Explorer" href="/docs/network/explorer">
+    Know where to inspect deployment signatures and program accounts.
+  </Card>
+</Cards>
+
+## Program deployment model
+
+Solana-compatible programs use the upgradeable loader model. These names appear in CLI output and explorer views.
+
+| Term | Meaning |
+| --- | --- |
+| Program ID | The on-chain address clients use when they call your program |
+| Program account | The executable account at the Program ID; it stores program metadata and points to ProgramData |
+| ProgramData account | The account that stores deployed executable bytes and upgrade authority metadata |
+| Upgrade authority | The keypair that can update, transfer authority, make immutable, or close the program |
+| Buffer account | A temporary account the loader uses while uploading new program bytes |
+
+Keep the upgrade authority keypair secure. If you lose it, you cannot update or close the program. If you remove it with `--final`, the program becomes immutable.
+
+## Lifecycle overview
+
+Most programs move through the same lifecycle.
+
+| Stage | What happens |
+| --- | --- |
+| Build | `cargo build-sbf` creates the compiled `.so` file and usually a program keypair in `target/deploy` |
+| Deploy | `solana program deploy` uploads the executable bytes and creates the program account |
+| Inspect | `solana program show` and the explorer confirm ProgramData, authority, size, balance, and slot |
+| Update | Rebuild and run `solana program deploy` again while the upgrade authority still controls the program |
+| Govern | Transfer upgrade authority, keep it secure, or remove it when the program should become immutable |
+| Retire | Close the program only when it is no longer needed and still has an upgrade authority |
+
+## Configure the CLI
+
+Set Gorbagana as the active RPC endpoint and confirm the keypair that will pay for deployment.
+
+```bash
+solana config set --url https://rpc.gorbagana.wtf
+solana config get
+solana address
+solana balance
+```
+
+The wallet must hold native GOR. If it does not, bridge or send GOR to the address shown by `solana address`.
+
+## Build the program
+
+Build your native Rust program with the Solana SBF toolchain.
+
+```bash
+cargo build-sbf
+```
+
+The build writes deployable artifacts under `target/deploy`.
+
+```txt
+target/
+  deploy/
+    hello_gorbagana.so
+    hello_gorbagana-keypair.json
+```
+
+The `.so` file is the compiled program. The `*-keypair.json` file controls the Program ID when your project generated one.
+
+Print the Program ID before deployment:
+
+```bash
+solana address -k ./target/deploy/hello_gorbagana-keypair.json
+```
+
+If the keypair file is missing, rebuild the program or generate a new keypair for the program ID.
+
+## Check program size and cost
+
+Program deployments allocate storage for executable bytes. Larger programs need more native GOR than simple transfers.
+
+Check the compiled program size.
+
+<Tabs items={["macOS/Linux", "Windows PowerShell"]}>
+<Tab>
+
+```bash
+wc -c < ./target/deploy/hello_gorbagana.so
+```
+
+</Tab>
+<Tab>
+
+```powershell
+(Get-Item .\target\deploy\hello_gorbagana.so).Length
+```
+
+</Tab>
+</Tabs>
+
+Use the byte count to estimate rent exemption:
+
+```bash
+solana rent PROGRAM_SIZE_BYTES
+```
+
+Keep more native GOR than the rent estimate because deployment also pays transaction fees and may need extra allocation if you later deploy a larger binary.
+
+<Callout type="info" title="Solana CLI labels">
+  Some Solana CLI output keeps Solana naming. When the CLI points to Gorbagana RPC, deployment fees and balances use native GOR.
+</Callout>
+
+## Deploy with the Solana CLI
+
+From the program repository, deploy the compiled `.so` file to Gorbagana.
+
+```bash
+solana program deploy ./target/deploy/hello_gorbagana.so \
+  --url https://rpc.gorbagana.wtf
+```
+
+Replace `hello_gorbagana.so` with the compiled artifact from your project.
+
+Expected output includes a program ID and a transaction signature.
+
+```txt
+Program Id: PROGRAM_ID
+Signature: TRANSACTION_SIGNATURE
+```
+
+Save both values. The program ID is the on-chain address your clients will call. The signature is the deployment transaction you can inspect.
+
+To deploy with a specific Program ID, pass the program keypair explicitly:
+
+```bash
+solana program deploy ./target/deploy/hello_gorbagana.so \
+  --program-id ./target/deploy/hello_gorbagana-keypair.json \
+  --url https://rpc.gorbagana.wtf
+```
+
+## Inspect the program
+
+After deployment, open the [Explorer](/docs/network/explorer). Search for the program ID to confirm that the program account exists. Search for the transaction signature to review logs and fees.
+
+You can also confirm the deployment transaction from the CLI:
+
+```bash
+solana confirm TRANSACTION_SIGNATURE -v \
+  --url https://rpc.gorbagana.wtf
+```
+
+Show program metadata from the CLI:
+
+```bash
+solana program show PROGRAM_ID \
+  --url https://rpc.gorbagana.wtf
+```
+
+Expected output includes the Program ID, owner, ProgramData address, upgrade authority, last deployed slot, data length, and balance.
+
+```txt
+Program Id: PROGRAM_ID
+Owner: BPFLoaderUpgradeab1e11111111111111111111111
+ProgramData Address: PROGRAMDATA_ADDRESS
+Authority: UPGRADE_AUTHORITY
+Last Deployed In Slot: SLOT
+Data Length: PROGRAM_SIZE_BYTES
+Balance: BALANCE
+```
+
+## Update a program
+
+Update a program when the current upgrade authority still controls it.
+
+1. Change the program source.
+2. Rebuild the program:
+
+   ```bash
+   cargo build-sbf
+   ```
+
+3. Deploy the new binary:
+
+   ```bash
+   solana program deploy ./target/deploy/hello_gorbagana.so \
+     --url https://rpc.gorbagana.wtf
+   ```
+
+If the new binary is larger than the currently allocated program data account, the CLI can extend the program account during deployment and charge the fee payer for the extra allocation.
+
+To extend space manually, use:
+
+```bash
+solana program extend PROGRAM_ID ADDITIONAL_BYTES \
+  --url https://rpc.gorbagana.wtf
+```
+
+Use manual extension when you want to allocate space before a planned larger update. `ADDITIONAL_BYTES` is the extra space to add, not the final program size.
+
+## Manage upgrade authority
+
+Transfer upgrade authority when another keypair should control future updates.
+
+```bash
+solana program set-upgrade-authority PROGRAM_ID \
+  --new-upgrade-authority ./new-authority-keypair.json \
+  --url https://rpc.gorbagana.wtf
+```
+
+After the transfer, the old authority cannot update or close the program unless it has access to the new authority keypair.
+
+Make a program immutable only when you are sure it should never change again.
+
+```bash
+solana program set-upgrade-authority PROGRAM_ID \
+  --final \
+  --url https://rpc.gorbagana.wtf
+```
+
+<Callout type="warn" title="Immutable means permanent">
+  After you remove upgrade authority, the program cannot be updated or closed.
+</Callout>
+
+## Close a program
+
+Close a program only when you no longer need it. Closing withdraws the account balance to the authority, but the Program ID cannot be reused.
+
+```bash
+solana program close PROGRAM_ID \
+  --bypass-warning \
+  --url https://rpc.gorbagana.wtf
+```
+
+If you later redeploy the same source, generate a new program keypair and use the new Program ID.
+
+## Utility commands
+
+Use these commands to audit programs controlled by your current CLI wallet or inspect deployed bytes.
+
+List programs where the current wallet is the authority:
+
+```bash
+solana program show --programs \
+  --url https://rpc.gorbagana.wtf
+```
+
+Download the deployed program bytes:
+
+```bash
+solana program dump PROGRAM_ID ./downloaded_program.so \
+  --url https://rpc.gorbagana.wtf
+```
+
+Compare the downloaded file with your local build when you need to verify what is live.
+
+## Deployment flags
+
+Use these flags when uploads expire, the network is busy, or your deployment needs a specific fee strategy.
+
+```bash
+solana program deploy ./target/deploy/hello_gorbagana.so \
+  --url https://rpc.gorbagana.wtf \
+  --max-sign-attempts 10 \
+  --with-compute-unit-price 10000
+```
+
+| Flag | Use |
+| --- | --- |
+| `--max-sign-attempts` | Retries signing with a fresh blockhash when deployment transactions expire |
+| `--with-compute-unit-price` | Adds a priority fee per compute unit |
+| `--use-rpc` | Sends through the configured RPC path; use only if your RPC setup supports it |
+
+## Common issues
+
+<Accordions type="single">
+<Accordion title="The deploy wallet has no native GOR">
+
+Run:
+
+```bash
+solana address
+solana balance
+```
+
+Fund that exact address with native GOR before deploying. Program deployments cost more than simple transfers because they write program data accounts.
+
+</Accordion>
+<Accordion title="The CLI is pointed at the wrong network">
+
+Run:
+
+```bash
+solana config get
+```
+
+The `RPC URL` value should match the Gorbagana endpoint in [Addresses](/docs/reference/addresses).
+
+</Accordion>
+<Accordion title="The compiled file path is wrong">
+
+Check that the `.so` file exists before deploying:
+
+```bash
+ls target/deploy
+```
+
+Use the exact file path in `solana program deploy`.
+
+</Accordion>
+<Accordion title="The Program ID changed unexpectedly">
+
+Check which keypair controls the Program ID:
+
+```bash
+solana address -k ./target/deploy/hello_gorbagana-keypair.json
+```
+
+Use `--program-id ./target/deploy/hello_gorbagana-keypair.json` when you need the deployment to use that exact Program ID.
+
+</Accordion>
+<Accordion title="The upgrade authority is wrong">
+
+Show the program metadata:
+
+```bash
+solana program show PROGRAM_ID \
+  --url https://rpc.gorbagana.wtf
+```
+
+Check the `Authority` field. Future updates must be signed by that authority.
+
+</Accordion>
+<Accordion title="Deployment fails after submission">
+
+Search the transaction signature in the explorer. Review the status, logs, account changes, and fee payer balance.
+
+If the transaction never appears, rebuild and redeploy with a fresh blockhash instead of reusing an old serialized transaction.
+
+</Accordion>
+<Accordion title="The update is larger than the deployed program">
+
+Check the current data length:
+
+```bash
+solana program show PROGRAM_ID \
+  --url https://rpc.gorbagana.wtf
+```
+
+Then compare it with the new local binary size:
+
+```bash
+wc -c < ./target/deploy/hello_gorbagana.so
+```
+
+If you want to allocate space before deploying, extend the program by the extra bytes you need.
+
+```bash
+solana program extend PROGRAM_ID ADDITIONAL_BYTES \
+  --url https://rpc.gorbagana.wtf
+```
+
+</Accordion>
+<Accordion title="The program cannot be updated">
+
+Show the program metadata:
+
+```bash
+solana program show PROGRAM_ID \
+  --url https://rpc.gorbagana.wtf
+```
+
+If `Authority` is missing, the program is immutable. It cannot be updated or closed. If `Authority` is present, sign the update with that authority.
+
+</Accordion>
+<Accordion title="The deployment upload expires">
+
+Increase signing attempts and retry with a fresh blockhash.
+
+```bash
+solana program deploy ./target/deploy/hello_gorbagana.so \
+  --url https://rpc.gorbagana.wtf \
+  --max-sign-attempts 10
+```
+
+If uploads keep expiring, check RPC health and retry from a more stable network connection.
+
+</Accordion>
+</Accordions>
+
+## Next steps
+
+<Cards>
+  <Card icon={<CheckCircle2 />} title="Concepts" href="/docs/concepts">
+    Review accounts, programs, transactions, and fees.
+  </Card>
+  <Card icon={<FlaskConical />} title="Testing" href="/docs/build/testing">
+    Run local checks and a small live smoke test.
+  </Card>
+  <Card icon={<ShieldCheck />} title="Security checklist" href="/docs/build/security-checklist">
+    Review the pre-deploy account and authority checklist.
+  </Card>
+  <Card icon={<Search />} title="Explorer" href="/docs/network/explorer">
+    Inspect program accounts and deployment transactions.
+  </Card>
+  <Card icon={<Terminal />} title="CLI reference" href="/docs/reference/cli">
+    Copy common CLI commands for Gorbagana.
+  </Card>
+  <Card icon={<ReceiptText />} title="Fees" href="/docs/network/fees">
+    Understand why deployments need a funded keypair.
+  </Card>
+  <Card icon={<Blocks />} title="Anchor projects" href="/docs/build/anchor">
+    Deploy with Anchor workspace commands.
+  </Card>
+  <Card icon={<TriangleAlert />} title="Troubleshooting" href="/docs/troubleshooting">
+    Fix failed deploys, missing funds, and wrong-network issues.
+  </Card>
+</Cards>

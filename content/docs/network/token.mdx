@@ -1,0 +1,52 @@
+---
+title: Token
+description: Native GOR units, decimals, and Solana token mint reference.
+icon: Coins
+---
+
+import { ArrowRightLeft, Braces, ReceiptText, Send } from 'lucide-react';
+
+GOR is the native token used for gas on Gorbagana.
+
+| Field | Value |
+| --- | --- |
+| Native token | GOR |
+| Decimals | `9` |
+| Smallest unit | `1_000_000_000` base units per `1 GOR` |
+| Solana token mint | `71Jvq4Epe2FCJ7JFSF7jLXdNk1Wy4Bhqd9iL6bEFELvg` |
+| Bridge | `https://bridge.gorbagana.wtf` |
+
+## Native GOR
+
+Use native GOR on Gorbagana to pay transaction fees, deploy programs, and interact with apps.
+
+## GOR on Solana
+
+The Solana token mint represents GOR before or after bridging.
+
+<ReferenceList items={[
+  {
+    label: "Solana GOR mint",
+    value: "71Jvq4Epe2FCJ7JFSF7jLXdNk1Wy4Bhqd9iL6bEFELvg",
+    description: "Use this mint for the GOR token on Solana.",
+  },
+]} />
+
+Use the [Bridge](https://bridge.gorbagana.wtf) to move between the Solana token and native GOR.
+
+## Next steps
+
+<Cards>
+  <Card icon={<ArrowRightLeft />} title="Bridge" href="/docs/network/bridge">
+    Move GOR between Solana and Gorbagana.
+  </Card>
+  <Card icon={<ReceiptText />} title="Fees" href="/docs/network/fees">
+    Understand fee payer balances, transfers, and deployments.
+  </Card>
+  <Card icon={<Send />} title="Send GOR" href="/docs/guides/send-gor">
+    Send native GOR after your wallet is funded.
+  </Card>
+  <Card icon={<Braces />} title="Addresses" href="/docs/reference/addresses">
+    Find the Solana GOR mint and public links.
+  </Card>
+</Cards>

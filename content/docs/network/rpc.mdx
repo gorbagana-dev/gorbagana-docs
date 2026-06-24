@@ -1,0 +1,123 @@
+---
+title: RPC setup
+description: Configure the public RPC endpoint in wallets, scripts, and Solana-compatible tooling.
+icon: RadioTower
+---
+
+import { Braces, Search, Terminal } from 'lucide-react';
+
+Configure the public RPC endpoint in CLIs, scripts, and apps. For raw JSON-RPC request shapes, use the [RPC reference](/docs/reference/rpc).
+
+| Endpoint | Value |
+| --- | --- |
+| HTTP RPC | `https://rpc.gorbagana.wtf` |
+| WebSocket | `wss://rpc.gorbagana.wtf` |
+
+## Configure the Solana CLI
+
+Set the Solana CLI URL to Gorbagana before you run balance, transfer, or deployment commands. For app code, create a `Connection` with the same endpoint.
+
+<Tabs items={["CLI", "JavaScript"]}>
+<Tab>
+
+```bash
+solana config set --url https://rpc.gorbagana.wtf
+```
+
+Check the active configuration:
+
+```bash
+solana config get
+```
+
+</Tab>
+<Tab>
+
+```ts
+import { Connection } from "@solana/web3.js";
+
+const connection = new Connection("https://rpc.gorbagana.wtf", "confirmed");
+```
+
+</Tab>
+</Tabs>
+
+## Query JSON-RPC
+
+Use `getHealth` to confirm that the endpoint responds.
+
+```bash
+curl https://rpc.gorbagana.wtf \
+  -H "Content-Type: application/json" \
+  -d '{"jsonrpc":"2.0","id":1,"method":"getHealth"}'
+```
+
+Expected response:
+
+```json
+{"jsonrpc":"2.0","result":"ok","id":1}
+```
+
+## Use in JavaScript
+
+Install `@solana/web3.js` and create a connection with the Gorbagana RPC URL.
+
+<Tabs items={["npm", "pnpm", "yarn", "bun"]}>
+<Tab>
+
+```bash
+npm install @solana/web3.js
+```
+
+</Tab>
+<Tab>
+
+```bash
+pnpm add @solana/web3.js
+```
+
+</Tab>
+<Tab>
+
+```bash
+yarn add @solana/web3.js
+```
+
+</Tab>
+<Tab>
+
+```bash
+bun add @solana/web3.js
+```
+
+</Tab>
+</Tabs>
+
+```ts
+import { Connection, PublicKey } from "@solana/web3.js";
+
+const connection = new Connection("https://rpc.gorbagana.wtf", "confirmed");
+const balance = await connection.getBalance(
+  new PublicKey("11111111111111111111111111111111"),
+);
+
+console.log(balance);
+```
+
+## Debug with explorer links
+
+Use the [Explorer](/docs/network/explorer) to check the result of an RPC script, CLI command, or wallet action. Use the [validator page](https://explorer.gorbagana.wtf/validators) when you need the current validator view.
+
+## Next steps
+
+<Cards>
+  <Card icon={<Terminal />} title="CLI reference" href="/docs/reference/cli">
+    Copy common Solana CLI commands for Gorbagana.
+  </Card>
+  <Card icon={<Search />} title="Explorer" href="/docs/network/explorer">
+    Inspect transactions, accounts, programs, and validators.
+  </Card>
+  <Card icon={<Braces />} title="Addresses" href="/docs/reference/addresses">
+    Find RPC, WebSocket, explorer, and bridge values.
+  </Card>
+</Cards>

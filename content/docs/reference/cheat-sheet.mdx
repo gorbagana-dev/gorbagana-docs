@@ -1,0 +1,375 @@
+---
+title: Developer cheat sheet
+description: Copyable Gorbagana endpoints, token values, commands, and links.
+icon: ClipboardList
+---
+
+import { ArrowRightLeft, Blocks, BookMarked, Braces, Coins, FileCode, FlaskConical, GitCompareArrows, RadioTower, Search, Send, ShieldCheck, Terminal, Wallet } from 'lucide-react';
+
+Common Gorbagana values and commands in one place.
+
+## Endpoints
+
+These URLs work in clients, scripts, wallets, and explorer links.
+
+<ReferenceList columns="two" items={[
+  {
+    label: "HTTP RPC",
+    value: "https://rpc.gorbagana.wtf",
+    href: "https://rpc.gorbagana.wtf",
+    description: "Use in clients, scripts, wallets, and CLI configuration.",
+  },
+  {
+    label: "WebSocket",
+    value: "wss://rpc.gorbagana.wtf",
+    description: "Use for subscriptions such as slots, logs, accounts, and signatures.",
+  },
+  {
+    label: "Explorer",
+    value: "https://explorer.gorbagana.wtf",
+    href: "https://explorer.gorbagana.wtf",
+    description: "Inspect transactions, accounts, programs, and blocks.",
+  },
+  {
+    label: "Validators",
+    value: "https://explorer.gorbagana.wtf/validators",
+    href: "https://explorer.gorbagana.wtf/validators",
+    description: "View validator activity in the explorer.",
+  },
+  {
+    label: "Bridge",
+    value: "https://bridge.gorbagana.wtf",
+    href: "https://bridge.gorbagana.wtf",
+    description: "Move GOR between Solana and Gorbagana.",
+  },
+]} />
+
+## Operator values
+
+Operator values for RPC node and validator configuration.
+
+<ReferenceList items={[
+  {
+    label: "Entrypoint",
+    value: "gorbagana.vaasl.io:8001",
+    description: "Use as a trusted gossip entrypoint for node startup.",
+  },
+  {
+    label: "Known validator",
+    value: "EkDhrb9ndZ2YtwPZoGipeDoJx9jsNzasHvXsRHJX2t2Y",
+    description: "Use with known-validator configuration when joining the network.",
+  },
+  {
+    label: "Genesis hash",
+    value: "9Xev9AWhZjfkBzkt2uap5JYeWxn48L2N21JA76bWebWd",
+    description: "Use to prevent a node from joining the wrong network.",
+  },
+]} />
+
+## Token values
+
+Use native GOR for fees, transfers, and program deployments on Gorbagana.
+
+<ReferenceList columns="two" items={[
+  {
+    label: "Native token",
+    value: "GOR",
+    description: "Used for fees, transfers, and program deployments.",
+  },
+  {
+    label: "Decimals",
+    value: "9",
+    description: "Native GOR uses nine decimal places.",
+  },
+  {
+    label: "Base units",
+    value: "1 GOR = 1,000,000,000 base units",
+    description: "Use base units when you work with low-level clients.",
+  },
+  {
+    label: "Solana GOR mint",
+    value: "71Jvq4Epe2FCJ7JFSF7jLXdNk1Wy4Bhqd9iL6bEFELvg",
+    description: "Use this mint for the GOR token on Solana.",
+  },
+]} />
+
+## CLI setup
+
+Point the Solana CLI at Gorbagana before you run balance, transfer, or deploy commands.
+
+```bash
+solana config set --url https://rpc.gorbagana.wtf
+solana config get
+```
+
+Check the active wallet.
+
+```bash
+solana address
+solana balance
+```
+
+Check another wallet.
+
+```bash
+solana balance WALLET_ADDRESS
+```
+
+## Wallet and funding
+
+Use Backpack for wallet-based activity documented here. Use the bridge when you need native GOR on Gorbagana.
+
+<ReferenceList columns="two" items={[
+  {
+    label: "Bridge",
+    value: "https://bridge.gorbagana.wtf",
+    href: "https://bridge.gorbagana.wtf",
+    description: "Use when you need native GOR on Gorbagana.",
+  },
+  {
+    label: "Wallet explorer URL",
+    value: "https://explorer.gorbagana.wtf/address/WALLET_ADDRESS",
+    description: "Replace WALLET_ADDRESS with the address you want to inspect.",
+  },
+]} />
+
+Check your active CLI wallet after changing networks:
+
+```bash
+solana config set --url https://rpc.gorbagana.wtf
+solana address
+solana balance
+```
+
+## Transfers
+
+Send a small transfer first when you are testing a new wallet or script.
+
+```bash
+solana transfer RECIPIENT_ADDRESS 0.001 \
+  --url https://rpc.gorbagana.wtf
+```
+
+Confirm a submitted transaction.
+
+```bash
+solana confirm TRANSACTION_SIGNATURE -v \
+  --url https://rpc.gorbagana.wtf
+```
+
+Open a transaction in the explorer.
+
+<ReferenceList items={[
+  {
+    label: "Transaction URL",
+    value: "https://explorer.gorbagana.wtf/tx/TRANSACTION_SIGNATURE",
+    description: "Replace TRANSACTION_SIGNATURE with the submitted transaction signature.",
+  },
+]} />
+
+## RPC checks
+
+Use `getHealth` and `getSlot` before debugging client code.
+
+```bash
+curl https://rpc.gorbagana.wtf \
+  -H "Content-Type: application/json" \
+  -d '{"jsonrpc":"2.0","id":1,"method":"getHealth"}'
+```
+
+```bash
+curl https://rpc.gorbagana.wtf \
+  -H "Content-Type: application/json" \
+  -d '{"jsonrpc":"2.0","id":1,"method":"getSlot"}'
+```
+
+Create a JavaScript connection.
+
+```ts
+import { Connection } from "@solana/web3.js";
+
+export const connection = new Connection(
+  "https://rpc.gorbagana.wtf",
+  "confirmed",
+);
+```
+
+## Program deployment
+
+Before a live deploy, run local tests and review the security checklist.
+
+<Cards>
+  <Card icon={<FlaskConical />} title="Testing" href="/docs/build/testing">
+    Run local checks and a small live smoke test.
+  </Card>
+  <Card icon={<ShieldCheck />} title="Security checklist" href="/docs/build/security-checklist">
+    Review accounts, signers, PDAs, CPIs, tokens, and authority.
+  </Card>
+</Cards>
+
+Common Solana CLI program lifecycle commands. See [Deploy programs](/docs/build/deploy-programs) before you update, finalize, or close a production program.
+
+Build and inspect local artifacts.
+
+```bash
+cargo build-sbf
+solana address -k ./target/deploy/PROGRAM-keypair.json
+solana rent PROGRAM_SIZE_BYTES
+```
+
+Deploy the program.
+
+```bash
+solana program deploy ./target/deploy/PROGRAM.so \
+  --url https://rpc.gorbagana.wtf
+```
+
+Deploy with a specific Program ID.
+
+```bash
+solana program deploy ./target/deploy/PROGRAM.so \
+  --program-id ./target/deploy/PROGRAM-keypair.json \
+  --url https://rpc.gorbagana.wtf
+```
+
+Show deployed program metadata.
+
+```bash
+solana program show PROGRAM_ID \
+  --url https://rpc.gorbagana.wtf
+```
+
+List programs controlled by the active wallet.
+
+```bash
+solana program show --programs \
+  --url https://rpc.gorbagana.wtf
+```
+
+Download deployed program bytes.
+
+```bash
+solana program dump PROGRAM_ID ./downloaded_program.so \
+  --url https://rpc.gorbagana.wtf
+```
+
+Extend a program before a larger update.
+
+```bash
+solana program extend PROGRAM_ID ADDITIONAL_BYTES \
+  --url https://rpc.gorbagana.wtf
+```
+
+Transfer upgrade authority.
+
+```bash
+solana program set-upgrade-authority PROGRAM_ID \
+  --new-upgrade-authority ./new-authority-keypair.json \
+  --url https://rpc.gorbagana.wtf
+```
+
+Make the program immutable.
+
+```bash
+solana program set-upgrade-authority PROGRAM_ID \
+  --final \
+  --url https://rpc.gorbagana.wtf
+```
+
+Close a program.
+
+```bash
+solana program close PROGRAM_ID \
+  --bypass-warning \
+  --url https://rpc.gorbagana.wtf
+```
+
+<Callout type="warn" title="Final and close are permanent decisions">
+  Make a program immutable only when you are sure it should never change again. Close a program only when you no longer need it.
+</Callout>
+
+## Anchor commands
+
+Common Anchor workspace commands. See [Anchor projects](/docs/build/anchor) for the full setup, Program ID alignment, IDL, and update flow.
+
+| Task | Command |
+| --- | --- |
+| Check Anchor version | `anchor --version` |
+| List workspace program IDs | `anchor keys list` |
+| Sync `declare_id!` with program keypairs | `anchor keys sync` |
+| Build programs and IDLs | `anchor build` |
+| Deploy workspace programs | `anchor deploy --provider.cluster https://rpc.gorbagana.wtf` |
+| Upgrade one program | `anchor upgrade ./target/deploy/PROGRAM.so --program-id PROGRAM_ID --provider.cluster https://rpc.gorbagana.wtf` |
+| Fetch published IDL | `anchor idl fetch -o target/idl/verified.json PROGRAM_ID` |
+
+## App snippets
+
+Small helpers for frontend or script code.
+
+Format native GOR from base units.
+
+```ts
+import { LAMPORTS_PER_SOL } from "@solana/web3.js";
+
+export function formatGor(baseUnits: number) {
+  return baseUnits / LAMPORTS_PER_SOL;
+}
+```
+
+Build an explorer transaction URL.
+
+```ts
+export function explorerTxUrl(signature: string) {
+  return `https://explorer.gorbagana.wtf/tx/${signature}`;
+}
+```
+
+## Related docs
+
+<Cards>
+  <Card icon={<RadioTower />} title="RPC setup" href="/docs/network/rpc">
+    Configure RPC in clients, scripts, and wallets.
+  </Card>
+  <Card icon={<Braces />} title="Addresses" href="/docs/reference/addresses">
+    Copy canonical URLs, token values, and public links.
+  </Card>
+  <Card icon={<Terminal />} title="CLI reference" href="/docs/reference/cli">
+    Copy common Solana CLI commands for Gorbagana.
+  </Card>
+  <Card icon={<FileCode />} title="Deploy programs" href="/docs/build/deploy-programs">
+    Build, deploy, inspect, update, and manage programs.
+  </Card>
+  <Card icon={<FlaskConical />} title="Testing" href="/docs/build/testing">
+    Run local checks and a small live smoke test.
+  </Card>
+  <Card icon={<ShieldCheck />} title="Security checklist" href="/docs/build/security-checklist">
+    Review pre-deploy program risks.
+  </Card>
+  <Card icon={<BookMarked />} title="Glossary" href="/docs/reference/glossary">
+    Read short definitions for common terms.
+  </Card>
+  <Card icon={<Blocks />} title="Anchor projects" href="/docs/build/anchor">
+    Configure, build, deploy, update, and verify Anchor programs.
+  </Card>
+  <Card icon={<Braces />} title="Anchor client" href="/docs/guides/anchor-client">
+    Load an IDL and call a deployed Anchor program from TypeScript.
+  </Card>
+  <Card icon={<Search />} title="Explorer" href="/docs/network/explorer">
+    Inspect transactions, accounts, programs, and validators.
+  </Card>
+  <Card icon={<GitCompareArrows />} title="Gorbagana and Solana" href="/docs/concepts/solana-compatibility">
+    Review what carries over and what changes.
+  </Card>
+  <Card icon={<ArrowRightLeft />} title="Bridge" href="/docs/network/bridge">
+    Move GOR between Solana and Gorbagana.
+  </Card>
+  <Card icon={<Wallet />} title="Wallets" href="/docs/build/wallets">
+    Configure Backpack and local keypairs.
+  </Card>
+  <Card icon={<Send />} title="First app" href="/docs/guides/first-app">
+    Read a balance and send a tiny native GOR transfer.
+  </Card>
+  <Card icon={<Coins />} title="Token" href="/docs/network/token">
+    Check native GOR units and the Solana token mint.
+  </Card>
+</Cards>

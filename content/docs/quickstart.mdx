@@ -1,0 +1,158 @@
+---
+title: Quickstart
+description: Configure RPC, get native GOR, send a small transfer, and inspect it on Gorbagana.
+icon: Rocket
+---
+
+import { ArrowRightLeft, BookOpenText, Boxes, Braces, MonitorSmartphone, Search, Send, TriangleAlert, Wrench } from 'lucide-react';
+
+Connect a wallet or local keypair to Gorbagana, get native GOR, send a small transfer, and verify it in the explorer.
+
+## Before you start
+
+You need Backpack or a local keypair, plus native GOR for transaction fees.
+
+| Item | Value |
+| --- | --- |
+| Gorbagana RPC | `https://rpc.gorbagana.wtf` |
+| Explorer | `https://explorer.gorbagana.wtf` |
+| Bridge | `https://bridge.gorbagana.wtf` |
+
+## Quick start
+
+Complete these steps to connect, fund, send, and verify a wallet or keypair.
+
+<Steps>
+<Step>
+
+### Choose a signing path
+
+Use Backpack for wallet popups, browser apps, and mobile wallet activity. Use a local CLI keypair for terminal commands, scripts, and program deployments.
+
+| Path | Use it for |
+| --- | --- |
+| Backpack | Wallet UI, bridge destination, frontend app signing |
+| Local keypair | CLI transfers, scripts, deployments |
+
+</Step>
+<Step>
+
+### Point it at Gorbagana
+
+For Backpack, open the network settings and add a custom Solana RPC endpoint:
+
+```text
+https://rpc.gorbagana.wtf
+```
+
+For the Solana CLI, set the active RPC endpoint:
+
+```bash
+solana config set --url https://rpc.gorbagana.wtf
+```
+
+</Step>
+<Step>
+
+### Check the active CLI configuration
+
+```bash
+solana config get
+```
+
+If you are using Backpack only, skip this command.
+
+</Step>
+<Step>
+
+### Get native GOR
+
+Open the [Bridge](https://bridge.gorbagana.wtf), then bridge GOR from Solana to your Backpack address or CLI keypair address on Gorbagana.
+
+</Step>
+<Step>
+
+### Verify the funded address
+
+For Backpack, search your wallet address in the [Explorer](https://explorer.gorbagana.wtf).
+
+For the CLI, check the balance:
+
+```bash
+solana balance
+```
+
+</Step>
+<Step>
+
+### Send a small transfer
+
+If you are using the CLI and have a second wallet, send a tiny test transfer:
+
+```bash
+solana transfer RECIPIENT_ADDRESS 0.001
+```
+
+If you are using Backpack, send a small transfer from the wallet UI or from a trusted app that shows Gorbagana as the target network.
+
+</Step>
+<Step>
+
+### Inspect the transfer
+
+Copy the transaction signature from the wallet or CLI and search for it in the [Explorer](https://explorer.gorbagana.wtf).
+
+</Step>
+</Steps>
+
+<Callout type="info" title="Start small">
+  Use a small amount for your first transfer or deployment. Once the transaction appears in the explorer, you can repeat the same flow with the amount you actually need.
+</Callout>
+
+## Verify the network
+
+Use JSON-RPC when you want to confirm that the public endpoint responds.
+
+```bash
+curl https://rpc.gorbagana.wtf \
+  -H "Content-Type: application/json" \
+  -d '{"jsonrpc":"2.0","id":1,"method":"getHealth"}'
+```
+
+A healthy node returns:
+
+```json
+{"jsonrpc":"2.0","result":"ok","id":1}
+```
+
+## Next steps
+
+<Cards>
+  <Card icon={<ArrowRightLeft />} title="Bridge GOR" href="/docs/network/bridge">
+    Move GOR from Solana to native GOR on Gorbagana.
+  </Card>
+  <Card icon={<BookOpenText />} title="Concepts" href="/docs/concepts">
+    Understand accounts, transactions, programs, fees, RPC, explorer, and bridge flow.
+  </Card>
+  <Card icon={<Boxes />} title="First app" href="/docs/guides/first-app">
+    Read balance and send a tiny GOR transfer from TypeScript.
+  </Card>
+  <Card icon={<MonitorSmartphone />} title="Frontend apps" href="/docs/build/frontend">
+    Connect Backpack and send wallet-signed transactions from a React app.
+  </Card>
+  <Card icon={<Wrench />} title="Set up development" href="/docs/build/setup">
+    Configure Solana-compatible tools for Gorbagana.
+  </Card>
+  <Card icon={<Search />} title="Inspect a transaction" href="/docs/guides/inspect-transaction">
+    Find transactions, accounts, programs, and validators in the explorer.
+  </Card>
+  <Card icon={<Send />} title="Send GOR" href="/docs/guides/send-gor">
+    Send native GOR from a funded wallet.
+  </Card>
+  <Card icon={<Braces />} title="Addresses" href="/docs/reference/addresses">
+    Find endpoints, links, and token values.
+  </Card>
+  <Card icon={<TriangleAlert />} title="Troubleshooting" href="/docs/troubleshooting">
+    Fix common wallet, bridge, RPC, and transaction issues.
+  </Card>
+</Cards>

@@ -1,0 +1,245 @@
+---
+title: Testing
+description: Test Solana-compatible programs before live Gorbagana deployment.
+icon: FlaskConical
+---
+
+import { Blocks, FileCode, Search, ShieldCheck, Terminal, TriangleAlert } from 'lucide-react';
+
+Test locally first. Use the live Gorbagana network only for a small smoke test after local checks pass.
+
+## Testing path
+
+Use this path before you deploy or upgrade a program.
+
+1. Run local program tests.
+2. Run a local validator or fast program-test layer when the test needs chain state.
+3. Review accounts, signers, PDAs, CPIs, and authorities.
+4. Run one small live Gorbagana smoke test.
+5. Inspect the signature, logs, accounts, and fee payer in the explorer.
+
+<Callout type="warn" title="Local tests are not Gorbagana devnet">
+  `solana-test-validator`, Bankrun, LiteSVM, and Mollusk are local testing tools. They do not mean Gorbagana has a public devnet, testnet, faucet, or airdrop.
+</Callout>
+
+## Choose a test layer
+
+Pick the smallest layer that can prove the behavior you care about.
+
+<Accordions type="multiple">
+<Accordion title="anchor test">
+
+Use for Anchor workspace integration tests.
+
+- Proves: your Anchor tests build, deploy locally, and pass against a local validator.
+- Does not prove: live Gorbagana funding, RPC behavior, or explorer visibility.
+
+</Accordion>
+<Accordion title="anchor test --skip-local-validator">
+
+Use when you already run a local validator.
+
+- Proves: your tests run against the local validator process you control.
+- Does not prove: public network behavior.
+
+</Accordion>
+<Accordion title="solana-test-validator">
+
+Use for local CLI and client loops.
+
+- Proves: transactions, accounts, logs, and deploys work against a local Solana-compatible validator.
+- Does not prove: Gorbagana network state or live fees.
+
+</Accordion>
+<Accordion title="Bankrun">
+
+Use for JavaScript or TypeScript program tests.
+
+- Proves: program instructions can run against an in-process bank-style test environment.
+- Does not prove: public RPC behavior or wallet UX.
+
+</Accordion>
+<Accordion title="LiteSVM">
+
+Use for fast local SVM tests.
+
+- Proves: program logic can be tested without a full validator process.
+- Does not prove: public network behavior.
+
+</Accordion>
+<Accordion title="Mollusk">
+
+Use for isolated instruction checks.
+
+- Proves: instruction-level behavior and account validation can be tested directly.
+- Does not prove: full app flow or wallet behavior.
+
+</Accordion>
+<Accordion title="Live Gorbagana smoke test">
+
+Use as the final minimal check after local tests.
+
+- Proves: the funded wallet, RPC endpoint, transaction, and explorer verification path work together.
+- Does not prove: security review, performance, or production readiness.
+
+</Accordion>
+</Accordions>
+
+## Anchor local tests
+
+For Anchor workspaces, start with the standard local test flow.
+
+```bash
+anchor test
+```
+
+Anchor builds the workspace, starts a local validator, deploys the program locally, runs the tests, and stops the validator.
+
+Use `--skip-local-validator` only when you already run a local validator yourself.
+
+```bash
+anchor test --skip-local-validator
+```
+
+Keep tests close to the accounts your program expects. Check signers, writable accounts, PDA seeds and bumps, token accounts, and error paths.
+
+## Local validator loop
+
+Use a local validator when you want to run CLI commands, frontend scripts, or manual transactions before touching the live network.
+
+Terminal 1:
+
+```bash
+solana-test-validator
+```
+
+Terminal 2:
+
+```bash
+solana config set --url localhost
+solana config get
+solana balance
+```
+
+Deploy locally when you need to inspect program logs or account behavior.
+
+```bash
+cargo build-sbf
+solana program deploy ./target/deploy/PROGRAM.so
+```
+
+After local checks pass, point the CLI back to Gorbagana before any live smoke test.
+
+```bash
+solana config set --url https://rpc.gorbagana.wtf
+```
+
+## Fast program tests
+
+Fast local tools are useful when you want tighter feedback than a full validator loop.
+
+| Tool | Use |
+| --- | --- |
+| Bankrun | JavaScript and TypeScript tests that process transactions against loaded programs and accounts |
+| LiteSVM | Fast local SVM program tests |
+| Mollusk | Instruction-level tests for program behavior and account validation |
+
+Use the upstream docs for each tool's setup and API. Keep Gorbagana docs focused on what changes for the live network: RPC, native GOR, bridge, explorer, and wallet flow.
+
+## Live Gorbagana smoke test
+
+Run one small live check only after local tests pass.
+
+<Steps>
+<Step>
+
+### Point clients at Gorbagana
+
+```bash
+solana config set --url https://rpc.gorbagana.wtf
+solana config get
+```
+
+</Step>
+<Step>
+
+### Check the fee payer
+
+```bash
+solana address
+solana balance
+```
+
+The wallet must hold native GOR.
+
+</Step>
+<Step>
+
+### Submit a small transaction
+
+Use the smallest safe action for your project: a tiny transfer, a no-risk instruction, or a deployment to a throwaway program ID.
+
+```bash
+solana transfer RECIPIENT_ADDRESS 0.001 \
+  --url https://rpc.gorbagana.wtf
+```
+
+</Step>
+<Step>
+
+### Confirm the signature
+
+```bash
+solana confirm TRANSACTION_SIGNATURE -v \
+  --url https://rpc.gorbagana.wtf
+```
+
+</Step>
+<Step>
+
+### Inspect in the explorer
+
+Open the [Explorer](/docs/network/explorer) and check the signature, status, logs, fee payer, account changes, and fee.
+
+</Step>
+</Steps>
+
+<Callout type="warn" title="Do not reuse old signed transactions">
+  If a transaction expires or fails before landing, create and sign it again with a fresh blockhash.
+</Callout>
+
+## CI notes
+
+Run local tests in CI. Keep live Gorbagana checks out of default pull-request jobs unless you intentionally manage funded test wallets.
+
+Use CI for:
+
+- `anchor test`
+- unit tests and instruction tests
+- TypeScript client tests that do not need live funds
+- linting and type checks
+
+Avoid putting live private keys or funded wallets in default CI jobs. If you add a live smoke job, keep it manual, small, and easy to audit.
+
+## Related docs
+
+<Cards>
+  <Card icon={<ShieldCheck />} title="Security checklist" href="/docs/build/security-checklist">
+    Review accounts, signers, PDAs, CPIs, tokens, and authority.
+  </Card>
+  <Card icon={<FileCode />} title="Deploy programs" href="/docs/build/deploy-programs">
+    Build, deploy, inspect, update, and manage programs.
+  </Card>
+  <Card icon={<Blocks />} title="Anchor projects" href="/docs/build/anchor">
+    Configure, build, deploy, update, and verify Anchor workspaces.
+  </Card>
+  <Card icon={<Search />} title="Explorer" href="/docs/network/explorer">
+    Inspect signatures, logs, accounts, programs, and fees.
+  </Card>
+  <Card icon={<Terminal />} title="CLI reference" href="/docs/reference/cli">
+    Copy common Solana CLI commands for Gorbagana.
+  </Card>
+  <Card icon={<TriangleAlert />} title="Troubleshooting" href="/docs/troubleshooting">
+    Debug failed tests, deploys, balances, and transactions.
+  </Card>
+</Cards>

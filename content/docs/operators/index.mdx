@@ -1,0 +1,55 @@
+---
+title: Operators
+description: Run Gorbagana RPC nodes and validator infrastructure.
+icon: ServerCog
+---
+
+import { Activity, RadioTower, ServerCog, ShieldCheck } from 'lucide-react';
+
+This section is for teams running dedicated Gorbagana infrastructure.
+
+Start with an RPC node if you need dedicated application infrastructure. Run a consensus validator only if you are ready to operate a voting node, manage validator keys, monitor uptime, and fund ongoing vote transactions.
+
+## Choose what to run
+
+**RPC node**
+
+- Serves JSON-RPC and WebSocket traffic for apps, scripts, indexers, and explorers.
+- Usually runs with voting disabled.
+- Needs rate limits and request filtering if you expose it publicly.
+- Start here if you need dedicated infrastructure for an app or service.
+
+**Consensus validator**
+
+- Replays the ledger and participates in consensus.
+- Uses a vote account and validator identity.
+- Needs native GOR for vote transaction fees.
+- Needs monitoring, security procedures, and stake delegation.
+
+## Operator pages
+
+<Cards>
+  <Card icon={<RadioTower />} title="Run an RPC node" href="/docs/operators/rpc-node">
+    Serve dedicated JSON-RPC and WebSocket traffic for apps and services.
+  </Card>
+  <Card icon={<ServerCog />} title="Run a validator" href="/docs/operators/validator">
+    Prepare keys, vote accounts, host requirements, and startup configuration.
+  </Card>
+  <Card icon={<Activity />} title="Operations" href="/docs/operators/operations">
+    Monitor health, protect keys, manage upgrades, and troubleshoot nodes.
+  </Card>
+  <Card icon={<ShieldCheck />} title="Network reference" href="/docs/network">
+    Copy RPC, explorer, bridge, token, and validator links.
+  </Card>
+</Cards>
+
+## Recommended path
+
+1. Use the public RPC endpoint while you build.
+2. Run your own RPC node when your app needs dedicated throughput, custom retention, or an isolated endpoint.
+3. Run a validator only after you have a funded operator wallet, a monitored host, and a key-management plan.
+
+## Related upstream docs
+
+- [Agave validator operations](https://docs.anza.xyz/operations/)
+- [Agave RPC node setup](https://docs.anza.xyz/operations/setup-an-rpc-node)

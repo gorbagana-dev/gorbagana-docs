@@ -1,0 +1,185 @@
+---
+title: Wallet setup
+description: Connect Backpack, local keypairs, and scripts to Gorbagana.
+icon: Backpack
+---
+
+import { MonitorSmartphone, Search, Send, TriangleAlert } from 'lucide-react';
+
+Use Backpack for browser and mobile wallet activity on Gorbagana. Use local keypairs for CLI work, deployments, and scripts.
+
+## Choose the right wallet
+
+Use different signing setups for different jobs.
+
+<ReferenceList columns="two" items={[
+  {
+    label: "Backpack",
+    value: "Browser and mobile wallet",
+    description: "Use for app testing, user transfers, bridge activity, and wallet-signed frontend transactions.",
+    copy: false,
+  },
+  {
+    label: "Local keypair",
+    value: "~/.config/solana/id.json",
+    description: "Use for CLI commands, scripts, program deployments, and controlled test wallets.",
+  },
+  {
+    label: "Deployment authority",
+    value: "Separate keypair",
+    description: "Use a separate authority for production programs instead of reusing a daily wallet.",
+    copy: false,
+  },
+  {
+    label: "Explorer",
+    value: "https://explorer.gorbagana.wtf",
+    href: "https://explorer.gorbagana.wtf",
+    description: "Use as the source of truth for balances, signatures, accounts, and program activity.",
+  },
+]} />
+
+Confirm these before you sign transactions.
+
+| Check | Why it matters |
+| --- | --- |
+| RPC endpoint is Gorbagana | Transactions must be sent to the right network |
+| Wallet has native GOR | You need GOR for transaction fees |
+| Recipient address is correct | SVM addresses are irreversible once submitted |
+| Transaction opens in the explorer | The transaction landed on Gorbagana |
+
+## Backpack
+
+Use Backpack when you need a wallet popup, mobile wallet, bridge destination, or app signer.
+
+<Steps>
+<Step>
+
+### Open Backpack
+
+Install or open Backpack, then select the account you want to use on Gorbagana.
+
+</Step>
+<Step>
+
+### Select or add Gorbagana
+
+If Gorbagana appears in the network list, select it. If it does not, add a custom Solana RPC endpoint with:
+
+```text
+https://rpc.gorbagana.wtf
+```
+
+</Step>
+<Step>
+
+### Fund the address
+
+Bridge GOR from Solana to the Backpack address with the [Bridge](/docs/network/bridge).
+
+</Step>
+<Step>
+
+### Verify the balance
+
+Search the Backpack address in the [Explorer](/docs/network/explorer). The explorer is the source of truth if the wallet UI is stale.
+
+</Step>
+<Step>
+
+### Send a small test transaction
+
+Send a small transfer before using larger amounts or signing through a new app.
+
+</Step>
+</Steps>
+
+After you sign, open the transaction in the [Explorer](/docs/network/explorer) and confirm the status.
+
+<Callout type="warn" title="Check the network before signing">
+  A Solana-style address can exist on multiple SVM networks. Confirm the app, wallet, or script is using Gorbagana RPC before you sign.
+</Callout>
+
+## Scripts and keypairs
+
+Use a local keypair with the Solana CLI when you deploy programs or run scripts.
+
+```bash
+solana config set --url https://rpc.gorbagana.wtf
+solana config set --keypair ~/.config/solana/id.json
+solana address
+```
+
+Fund this exact address with native GOR before you deploy or send transactions.
+
+Use a separate keypair for production deployment authority when the program needs controlled upgrades.
+
+<Callout type="warn" title="Do not ship keypairs">
+  Keep local keypair files out of frontend apps, repositories, logs, screenshots, and support messages. Browser apps should ask the connected wallet to sign.
+</Callout>
+
+## App wallets
+
+For frontend apps, connect Backpack through a Solana wallet adapter flow, then send transactions through a Gorbagana `Connection`.
+
+```ts
+import { Connection } from "@solana/web3.js";
+
+const connection = new Connection("https://rpc.gorbagana.wtf", "confirmed");
+```
+
+Do not assume a connected wallet is on the correct network. Show the network, sender, recipient, amount, and fee payer before the user signs.
+
+## What to show in your app
+
+Show enough context for the user to understand the signature request.
+
+| Field | Example |
+| --- | --- |
+| Network | `Gorbagana` |
+| RPC | `https://rpc.gorbagana.wtf` |
+| Sender | Connected Backpack address |
+| Recipient | Destination wallet or program account |
+| Amount | Native GOR amount |
+| Explorer link | Transaction URL after submission |
+
+## Common issues
+
+<Accordions type="single">
+<Accordion title="Backpack shows no balance">
+
+Search the Backpack address in the explorer. If the explorer shows funds, reconnect Backpack, reload the app, and confirm the selected network or custom RPC endpoint.
+
+</Accordion>
+<Accordion title="The app reads a different balance than the CLI">
+
+Compare the browser wallet address with `solana address`. Backpack and the CLI may use different keypairs even when both point at Gorbagana RPC.
+
+</Accordion>
+<Accordion title="The transaction does not appear in the explorer">
+
+Confirm the app or script used `https://rpc.gorbagana.wtf`. If you have a signature, search the exact signature first, then search the sender address.
+
+</Accordion>
+<Accordion title="The wallet rejects signing">
+
+Reconnect Backpack, refresh the page, and retry with a small transfer. If the transaction was already submitted, search the signature before retrying.
+
+</Accordion>
+</Accordions>
+
+## Next steps
+
+<Cards>
+  <Card icon={<Send />} title="Send GOR" href="/docs/guides/send-gor">
+    Send a small native GOR transfer.
+  </Card>
+  <Card icon={<MonitorSmartphone />} title="Frontend apps" href="/docs/build/frontend">
+    Connect Backpack and send wallet-signed transactions from a React app.
+  </Card>
+  <Card icon={<Search />} title="Inspect transaction" href="/docs/guides/inspect-transaction">
+    Confirm a wallet action in the explorer.
+  </Card>
+  <Card icon={<TriangleAlert />} title="Troubleshooting" href="/docs/troubleshooting">
+    Fix missing balances and wallet connection issues.
+  </Card>
+</Cards>

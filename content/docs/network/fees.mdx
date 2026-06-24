@@ -1,0 +1,147 @@
+---
+title: Fees
+description: Native GOR fee basics for transfers, apps, and program deployments.
+icon: ReceiptText
+---
+
+import { FileCode, Search, Send, TriangleAlert } from 'lucide-react';
+
+Every Gorbagana transaction needs a fee payer with native GOR. The fee payer is the account that signs and pays for the transaction to run on the network.
+
+## Units
+
+GOR uses 9 decimals. One `GOR` equals `1,000,000,000` base units.
+
+Most client libraries expose balances in base units. Convert to GOR before showing amounts to users.
+
+```ts
+import { LAMPORTS_PER_SOL } from "@solana/web3.js";
+
+const gor = lamports / LAMPORTS_PER_SOL;
+```
+
+`LAMPORTS_PER_SOL` is still the Solana client constant name. In Gorbagana docs, treat it as base units per `1 GOR`.
+
+## What pays fees
+
+| Action | Fee payer | Notes |
+| --- | --- | --- |
+| Native GOR transfer | Sender wallet | Simple transfer transaction |
+| Wallet app transaction | Connected wallet | The app should show recipient and amount before signing |
+| Program deployment | Deployment keypair | Requires enough GOR to create and write program accounts |
+| Bridge source transaction | Source-side wallet | Keep enough gas on the side you are using |
+
+## Simple transfers
+
+Simple transfers only need a small native GOR balance for the transaction fee plus the amount being sent.
+
+Check the payer before sending:
+
+```bash
+solana address
+solana balance
+```
+
+Then send a small transfer:
+
+```bash
+solana transfer RECIPIENT_ADDRESS 0.001
+```
+
+## Program deployments
+
+Program deployments require more native GOR than a simple transfer because they create and write program accounts.
+
+Before deploying, check the deployment keypair:
+
+```bash
+solana config get
+solana address
+solana balance
+```
+
+If a deployment fails with insufficient funds, fund the exact address shown by `solana address`, then deploy again with a fresh transaction.
+
+## Frontend apps
+
+Before asking a wallet to sign, show:
+
+| Field | Why |
+| --- | --- |
+| Network | Confirms the app uses Gorbagana RPC |
+| Fee payer | Shows which wallet pays the fee |
+| Recipient | Prevents accidental transfers |
+| Amount | Shows the GOR amount before signing |
+| Explorer link | Lets the user verify the result after submission |
+
+Use simulation or wallet preview features when your app can provide a better estimate. If you cannot estimate the exact fee, still show the fee payer and enough context for the user to understand what they are signing.
+
+## Inspect fees
+
+After a transaction lands, open the signature in the [Explorer](/docs/network/explorer) and check the fee field.
+
+You can also query the transaction through JSON-RPC:
+
+```bash
+curl https://rpc.gorbagana.wtf \
+  -H "Content-Type: application/json" \
+  -d '{"jsonrpc":"2.0","id":1,"method":"getTransaction","params":["TRANSACTION_SIGNATURE",{"encoding":"json","maxSupportedTransactionVersion":0}]}'
+```
+
+## Common issues
+
+<Accordions type="single">
+<Accordion title="Insufficient funds">
+
+The fee payer does not have enough native GOR for the transaction.
+
+Check the payer address:
+
+```bash
+solana address
+solana balance
+```
+
+Then bridge or send native GOR to that exact address.
+
+</Accordion>
+<Accordion title="Transfer amount leaves no fee balance">
+
+If a wallet sends nearly its full balance, it may not leave enough GOR for the transaction fee. Send a smaller amount or keep a small balance in the sender wallet.
+
+</Accordion>
+<Accordion title="Deployment wallet is different from app wallet">
+
+Anchor and Solana CLI deployments use the configured keypair path, not your browser wallet.
+
+Run:
+
+```bash
+solana config get
+```
+
+Check the `Keypair Path`, then fund the address returned by:
+
+```bash
+solana address
+```
+
+</Accordion>
+</Accordions>
+
+## Next steps
+
+<Cards>
+  <Card icon={<Send />} title="Send GOR" href="/docs/guides/send-gor">
+    Send a small native GOR transfer.
+  </Card>
+  <Card icon={<FileCode />} title="Deploy programs" href="/docs/build/deploy-programs">
+    Prepare a funded deployment keypair.
+  </Card>
+  <Card icon={<Search />} title="Inspect a transaction" href="/docs/guides/inspect-transaction">
+    Check status, logs, account changes, and fee.
+  </Card>
+  <Card icon={<TriangleAlert />} title="Troubleshooting" href="/docs/troubleshooting">
+    Fix failed transactions and missing balances.
+  </Card>
+</Cards>

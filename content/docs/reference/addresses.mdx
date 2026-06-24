@@ -1,0 +1,109 @@
+---
+title: Addresses
+description: Canonical Gorbagana endpoints, links, token values, and public resources.
+icon: Braces
+---
+
+import { ArrowRightLeft, Coins, RadioTower, Search, Send, Terminal } from 'lucide-react';
+
+Canonical values for apps, scripts, bots, indexers, docs, and ecosystem listings.
+
+## Network endpoints
+
+| Name | Value |
+| --- | --- |
+| RPC | `https://rpc.gorbagana.wtf` |
+| WebSocket | `wss://rpc.gorbagana.wtf` |
+| Explorer | `https://explorer.gorbagana.wtf` |
+| Validators | `https://explorer.gorbagana.wtf/validators` |
+| Bridge | `https://bridge.gorbagana.wtf` |
+
+## Operator values
+
+<ReferenceList items={[
+  {
+    label: "Entrypoint",
+    value: "gorbagana.vaasl.io:8001",
+    description: "Use as a trusted gossip entrypoint for node startup.",
+  },
+  {
+    label: "Known validator",
+    value: "EkDhrb9ndZ2YtwPZoGipeDoJx9jsNzasHvXsRHJX2t2Y",
+    description: "Use with known-validator configuration when joining the network.",
+  },
+  {
+    label: "Genesis hash",
+    value: "9Xev9AWhZjfkBzkt2uap5JYeWxn48L2N21JA76bWebWd",
+    description: "Use to prevent a node from joining the wrong network.",
+  },
+]} />
+
+## Token values
+
+| Name | Value |
+| --- | --- |
+| Native token | `GOR` |
+| Decimals | `9` |
+| Base units | `1 GOR = 1,000,000,000` |
+| Solana GOR mint | `71Jvq4Epe2FCJ7JFSF7jLXdNk1Wy4Bhqd9iL6bEFELvg` |
+
+## Public links
+
+| Name | URL |
+| --- | --- |
+| Website | `https://gorbagana.wtf` |
+| Docs | `https://docs.gorbagana.wtf` |
+| GitHub | `https://github.com/gorbagana-dev` |
+| Telegram | `https://t.me/gorbagana_portal` |
+
+## Copy snippets
+
+Configure the Solana CLI:
+
+```bash
+solana config set --url https://rpc.gorbagana.wtf
+```
+
+Create a JavaScript connection:
+
+```ts
+import { Connection } from "@solana/web3.js";
+
+export const connection = new Connection(
+  "https://rpc.gorbagana.wtf",
+  "confirmed",
+);
+```
+
+Open a transaction in the explorer:
+
+<ReferenceList items={[
+  {
+    label: "Transaction URL",
+    value: "https://explorer.gorbagana.wtf/tx/TRANSACTION_SIGNATURE",
+    description: "Replace TRANSACTION_SIGNATURE with the submitted transaction signature.",
+  },
+]} />
+
+## Next steps
+
+<Cards>
+  <Card icon={<RadioTower />} title="RPC" href="/docs/network/rpc">
+    Configure clients, scripts, and CLIs.
+  </Card>
+  <Card icon={<Search />} title="Explorer" href="/docs/network/explorer">
+    Inspect transactions, accounts, programs, and validators.
+  </Card>
+  <Card icon={<ArrowRightLeft />} title="Bridge" href="/docs/network/bridge">
+    Move GOR between Solana and Gorbagana.
+  </Card>
+  <Card icon={<Coins />} title="Token" href="/docs/network/token">
+    Check native GOR units and the Solana mint.
+  </Card>
+  <Card icon={<Terminal />} title="CLI reference" href="/docs/reference/cli">
+    Copy common Solana CLI commands.
+  </Card>
+  <Card icon={<Send />} title="Send GOR" href="/docs/guides/send-gor">
+    Send a small native GOR transfer.
+  </Card>
+</Cards>

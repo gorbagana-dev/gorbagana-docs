@@ -1,0 +1,65 @@
+---
+title: Send GOR
+description: Send native GOR on Gorbagana with Solana-compatible tooling.
+icon: Send
+---
+
+import { Coins, ReceiptText, Search } from 'lucide-react';
+
+Send native GOR after your wallet is funded on Gorbagana.
+
+## Before you send
+
+Check the endpoint and wallet before creating a transfer.
+
+1. Configure the Gorbagana RPC:
+
+   ```bash
+   solana config set --url https://rpc.gorbagana.wtf
+   ```
+
+2. Check your address:
+
+   ```bash
+   solana address
+   ```
+
+3. Check your balance:
+
+   ```bash
+   solana balance
+   ```
+
+## Send a transfer
+
+Use `solana transfer` with the recipient address and amount. Start with a small amount when you test a wallet or script.
+
+```bash
+solana transfer RECIPIENT_ADDRESS 0.001
+```
+
+The command returns a transaction signature when the transfer is submitted.
+
+Confirm the transaction from the CLI:
+
+```bash
+solana confirm SIGNATURE -v
+```
+
+## Verify the transfer
+
+Open the [Explorer](/docs/network/explorer) and search for the signature. Check the status, sender, recipient, amount, and fee.
+
+## Next steps
+
+<Cards>
+  <Card icon={<Search />} title="Inspect a transaction" href="/docs/guides/inspect-transaction">
+    Review transaction details in the explorer.
+  </Card>
+  <Card icon={<ReceiptText />} title="Fees" href="/docs/network/fees">
+    Understand fee payer balances and native GOR units.
+  </Card>
+  <Card icon={<Coins />} title="Token reference" href="/docs/network/token">
+    Check GOR decimals and token references.
+  </Card>
+</Cards>

@@ -1,0 +1,162 @@
+---
+title: Security checklist
+description: Review common SVM and Anchor program risks before deploy or upgrade.
+icon: ShieldCheck
+---
+
+import { Blocks, FileCode, FlaskConical, Search, Terminal, TriangleAlert } from 'lucide-react';
+
+Use this checklist before you deploy or upgrade a program on Gorbagana.
+
+<Callout type="warn" title="This is not an audit">
+  This checklist helps catch common SVM and Anchor mistakes. It does not replace a security review for programs that hold meaningful value.
+</Callout>
+
+## Before you deploy
+
+Complete these checks before a live deploy or upgrade.
+
+- Run local tests and review failing paths, not only happy paths.
+- Run a small live smoke test only after local tests pass.
+- Check that clients use the correct Program ID.
+- Check the upgrade authority keypair and custody plan.
+- Inspect the deployed program with `solana program show` after every deploy or upgrade.
+
+## Account validation
+
+Validate every account your instruction depends on.
+
+| Check | Why it matters |
+| --- | --- |
+| Owner | Prevents a caller from passing an account controlled by the wrong program |
+| Account type | Confirms the account data matches the struct or discriminator you expect |
+| Executable flag | Confirms program accounts are executable when you expect a program |
+| Address | Confirms hard-coded or derived addresses match the intended account |
+| Data length | Prevents reads or writes against accounts with unexpected layout |
+| Initialization state | Prevents re-initialization or use of uninitialized data |
+
+For Anchor, use constraints such as `owner`, `address`, `has_one`, `seeds`, `bump`, `mut`, and typed account wrappers where they fit the instruction.
+
+## Signer and writable checks
+
+Keep signer and writable requirements explicit.
+
+- Require `Signer` only for accounts that must authorize the instruction.
+- Mark accounts writable only when the instruction changes lamports or data.
+- Check that the expected authority signs the instruction.
+- Watch for duplicate mutable accounts when two account fields must be different.
+- Do not assume the fee payer is also the program authority.
+
+Anchor constraints can express many of these checks, but you still need to decide which account should have each privilege.
+
+## PDA checks
+
+Program Derived Addresses should be deterministic and checked with the same seeds your program uses.
+
+- Use stable seeds.
+- Use the canonical bump unless your design requires another value.
+- Check the PDA belongs to the expected program.
+- Recreate signer seeds carefully before CPI calls.
+- Check authority assumptions when a PDA signs for token transfers, account closes, or state changes.
+
+Example Anchor shape:
+
+```rust
+#[account(
+    seeds = [b"vault", authority.key().as_ref()],
+    bump,
+)]
+pub vault: SystemAccount<'info>,
+```
+
+## Token checks
+
+Token instructions need more checks than a native GOR transfer.
+
+| Check | Why it matters |
+| --- | --- |
+| Mint | Confirms the instruction uses the intended token |
+| Token account owner | Confirms the token account belongs to the expected authority |
+| Token program | Confirms the instruction calls the intended token program |
+| Associated token account | Confirms wallet, mint, and token program match the expected ATA |
+| Decimals | Prevents UI and base-unit conversion mistakes |
+| Transfer authority | Confirms the signer or PDA can move the tokens |
+| Balance delta | Confirms the instruction changed balances by the intended amount |
+
+Use native GOR for fees and deployments on Gorbagana. Use the bridge docs when your flow moves between Solana GOR and native GOR.
+
+## CPI checks
+
+Cross-program invocations pass account privileges to another program. Review them carefully.
+
+- Check the target program ID.
+- Check account order and account mutability.
+- Limit `remaining_accounts` to what the instruction actually needs.
+- Review signer privilege forwarding.
+- Recreate PDA signer seeds from trusted state, not unchecked user input.
+- Check return values or post-conditions when the called program can fail or produce partial state.
+
+## State and math checks
+
+Review every state transition.
+
+- Check overflow and underflow.
+- Check rounding and base-unit conversions.
+- Make initialization idempotent or explicitly one-time.
+- Prevent replay when an instruction should run once.
+- Check close behavior and destination accounts.
+- Check rent and balance assumptions.
+- Store enough state to verify future instructions.
+
+## Upgrade lifecycle
+
+Program authority is part of the security model.
+
+| Decision | Check |
+| --- | --- |
+| Deploy | Save Program ID and deployment signature |
+| Inspect | Run `solana program show PROGRAM_ID` and check ProgramData, authority, data length, and balance |
+| Upgrade | Confirm the current authority is expected and the new binary is intentional |
+| Transfer authority | Confirm the new authority keypair or governance account is controlled |
+| Make immutable | Confirm the program should never be updated or closed |
+| Close | Confirm the Program ID no longer needs to be used |
+
+<Callout type="warn" title="Immutable and close are permanent decisions">
+  Removing upgrade authority prevents future updates. Closing a program prevents reuse of that Program ID.
+</Callout>
+
+## Final review
+
+Before you call the program from a user-facing app, confirm:
+
+- local tests passed
+- a small live smoke test passed
+- the client uses the intended Program ID
+- `solana program show` matches the expected ProgramData and authority
+- the explorer shows the deploy or upgrade signature
+- account constraints match the instruction design
+- token and PDA authority paths are covered by tests
+- upgrade authority custody is documented for the project
+
+## Related docs
+
+<Cards>
+  <Card icon={<FlaskConical />} title="Testing" href="/docs/build/testing">
+    Run local tests and a small live smoke test.
+  </Card>
+  <Card icon={<FileCode />} title="Deploy programs" href="/docs/build/deploy-programs">
+    Build, deploy, inspect, update, and manage programs.
+  </Card>
+  <Card icon={<Blocks />} title="Anchor projects" href="/docs/build/anchor">
+    Configure Anchor program IDs, IDLs, deploys, and upgrades.
+  </Card>
+  <Card icon={<Search />} title="Explorer" href="/docs/network/explorer">
+    Inspect signatures, accounts, programs, and logs.
+  </Card>
+  <Card icon={<Terminal />} title="CLI reference" href="/docs/reference/cli">
+    Copy program lifecycle commands.
+  </Card>
+  <Card icon={<TriangleAlert />} title="Troubleshooting" href="/docs/troubleshooting">
+    Fix common deploy, funding, and transaction issues.
+  </Card>
+</Cards>

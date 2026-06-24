@@ -1,0 +1,236 @@
+---
+title: Operations
+description: Monitor and maintain Gorbagana RPC nodes and validators.
+icon: Activity
+---
+
+import { Activity, HardDrive, ShieldCheck, Wrench } from 'lucide-react';
+
+Monitor and maintain Gorbagana infrastructure with the checks below.
+
+Run these checks after first setup, before upgrades, and any time users report stale data, missing transactions, or slow responses.
+
+## Healthy state
+
+Start with these checks before debugging deeper.
+
+| Surface | Healthy signal |
+| --- | --- |
+| RPC health | `getHealth` returns `ok` |
+| Slot progress | Local slot advances and stays near the public endpoint |
+| Validator catchup | `solana catchup --our-localhost` reports the node is caught up |
+| Logs | No repeated panic, disk, network, or voting errors |
+| Resources | Disk, memory, and network usage have alert headroom |
+
+## Health checks
+
+Run these checks from the host or from a trusted operations machine.
+
+<Steps>
+<Step>
+
+### Check RPC health
+
+Check RPC health.
+
+```bash
+RPC_URL=https://rpc.example.com
+
+curl "$RPC_URL" \
+  -H "content-type: application/json" \
+  --data @- <<'JSON'
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "getHealth"
+}
+JSON
+```
+
+</Step>
+<Step>
+
+### Check slot progress
+
+Check whether your node is advancing slots.
+
+```bash
+curl "$RPC_URL" \
+  -H "content-type: application/json" \
+  --data @- <<'JSON'
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "getSlot"
+}
+JSON
+```
+
+</Step>
+<Step>
+
+### Compare with the public endpoint
+
+Compare your slot with the public endpoint.
+
+```bash
+PUBLIC_RPC=https://rpc.gorbagana.wtf
+
+curl "$PUBLIC_RPC" \
+  -H "content-type: application/json" \
+  --data @- <<'JSON'
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "getSlot"
+}
+JSON
+```
+
+</Step>
+<Step>
+
+### Check validator catchup
+
+For validators, check catchup status.
+
+```bash
+solana catchup --our-localhost
+```
+
+</Step>
+</Steps>
+
+## Logs
+
+Watch the active node log.
+
+```bash
+tail -f /path/to/validator.log
+```
+
+Search for recent errors.
+
+```bash
+grep -Ei "error|panic|warn" \
+  /path/to/validator.log | tail -50
+```
+
+## Resource checks
+
+Check disk space.
+
+```bash
+df -h
+```
+
+Check memory pressure.
+
+```bash
+free -h
+```
+
+Check whether RPC ports are listening.
+
+```bash
+ss -ltnp | grep -E "8899|8900"
+```
+
+## Upgrade checklist
+
+1. Read the release notes for the Gorbagana validator release you are upgrading.
+2. Confirm the target version with the operator channel.
+3. Back up operator configuration and non-hot key references.
+4. Stop the node cleanly.
+5. Upgrade the validator release.
+6. Start the node.
+7. Verify health, slot progress, logs, and explorer visibility.
+
+## Security checklist
+
+<Cards>
+  <Card icon={<ShieldCheck />} title="Protect keys">
+    Keep withdraw authority keys offline. Keep only hot identity keys on validator hosts.
+  </Card>
+  <Card icon={<Activity />} title="Alert on lag">
+    Page an operator when slot lag grows, health checks fail, or voting stops.
+  </Card>
+  <Card icon={<HardDrive />} title="Watch storage">
+    Track ledger, account, and snapshot storage growth.
+  </Card>
+  <Card icon={<Wrench />} title="Document changes">
+    Record version changes, config edits, and recovery actions.
+  </Card>
+</Cards>
+
+## Troubleshooting
+
+<Accordions type="single">
+<Accordion title="The RPC endpoint returns errors">
+
+Check that the process is running, ports are listening, and the node is not far behind the public endpoint.
+
+```bash
+ss -ltnp | grep -E "8899|8900"
+```
+
+Then compare slots.
+
+```bash
+RPC_URL=https://rpc.example.com
+
+curl "$RPC_URL" \
+  -H "content-type: application/json" \
+  --data @- <<'JSON'
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "getSlot"
+}
+JSON
+```
+
+</Accordion>
+
+<Accordion title="The node is behind">
+
+Check network connectivity, disk I/O, memory pressure, and logs.
+
+```bash
+df -h
+free -h
+tail -100 /path/to/validator.log
+```
+
+If the node is consistently behind, move ledger and accounts to faster storage or increase host resources.
+
+</Accordion>
+
+<Accordion title="The validator is not voting">
+
+Check the vote account, identity balance, catchup status, and validator logs.
+
+```bash
+solana vote-account <VOTE_ACCOUNT>
+solana balance <VALIDATOR_IDENTITY>
+solana catchup --our-localhost
+```
+
+Make sure the identity account has enough native GOR to pay vote transaction fees.
+
+</Accordion>
+
+<Accordion title="A public RPC endpoint is overloaded">
+
+Put the endpoint behind a proxy and rate limiter. Disable methods you do not need, cap request body size, and monitor slow methods.
+
+Do not run public RPC traffic on the same host as a voting validator unless you have tested the load profile.
+
+</Accordion>
+</Accordions>
+
+## Next steps
+
+- Read [Run an RPC node](/docs/operators/rpc-node).
+- Read [Run a validator](/docs/operators/validator).
+- Read [Troubleshooting](/docs/troubleshooting).

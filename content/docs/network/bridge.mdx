@@ -1,0 +1,59 @@
+---
+title: Bridge
+description: Move GOR between Solana and Gorbagana.
+icon: ArrowRightLeft
+---
+
+import { Braces, Coins, Search } from 'lucide-react';
+
+Use the [Gorbagana Bridge](https://bridge.gorbagana.wtf) when you need to move GOR between Solana and Gorbagana.
+
+## Before you bridge
+
+Check both sides of the transfer before you sign.
+
+**Solana to Gorbagana**
+
+- Source asset: GOR token on Solana
+- Destination asset: native GOR on Gorbagana
+- Use: fund wallets, apps, and deployments
+
+**Gorbagana to Solana**
+
+- Source asset: native GOR on Gorbagana
+- Destination asset: GOR token on Solana
+- Use: move back to the Solana token
+
+## Bridge GOR
+
+Follow the bridge UI and verify the destination before signing.
+
+1. Open the [Bridge](https://bridge.gorbagana.wtf).
+2. Connect the wallet you want to use.
+3. Select the source and destination network.
+4. Enter the amount of GOR.
+5. Review the route, recipient, and estimated fees.
+6. Sign the transaction.
+7. Open the transaction in the [Explorer](https://explorer.gorbagana.wtf) after the bridge completes.
+
+## Notes
+
+Keep enough SOL or GOR for fees on the side you are using.
+
+<Callout type="warn" title="Do not submit the same bridge transfer twice">
+  If the destination balance does not update immediately, search the transaction or destination address in the explorer before you send another bridge transaction.
+</Callout>
+
+## Next steps
+
+<Cards>
+  <Card icon={<Coins />} title="Token reference" href="/docs/network/token">
+    Check the native token decimals and Solana token mint.
+  </Card>
+  <Card icon={<Search />} title="Inspect transactions" href="/docs/guides/inspect-transaction">
+    Verify bridge activity in the explorer.
+  </Card>
+  <Card icon={<Braces />} title="Addresses" href="/docs/reference/addresses">
+    Copy the bridge URL and other public Gorbagana values.
+  </Card>
+</Cards>

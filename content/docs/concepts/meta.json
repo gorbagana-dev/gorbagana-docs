@@ -1,0 +1,6 @@
+{
+  "title": "Concepts",
+  "icon": "BookOpenText",
+  "defaultOpen": true,
+  "pages": ["index", "solana-compatibility"]
+}

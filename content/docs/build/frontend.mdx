@@ -1,0 +1,391 @@
+---
+title: Frontend apps
+description: Connect Backpack, read balances, send transactions, and link to the explorer from a frontend app.
+icon: MonitorSmartphone
+---
+
+import { Backpack, Boxes, Braces, RadioTower, ReceiptText, Search, Send, ShieldCheck, TriangleAlert } from 'lucide-react';
+
+Connect Backpack in a React app, read native GOR balance, send a wallet-signed transaction, and link the result to the explorer.
+
+These examples use Next.js App Router, `@solana/wallet-adapter-react`, and `@solana/web3.js`. The same provider and hook pattern works in other React apps. This page uses wallet adapter plus `web3.js` because those APIs match many existing Solana browser apps.
+
+## Before you start
+
+You need:
+
+- Backpack installed and funded with native GOR
+- Gorbagana RPC: `https://rpc.gorbagana.wtf`
+- a React app that can render client components
+
+<Callout type="info" title="Why wallet adapter">
+  Backpack supports Solana wallet flows. Wallet adapter detects Wallet Standard wallets automatically, so the Gorbagana example does not need a Backpack-specific adapter package.
+</Callout>
+
+## Install packages
+
+Install the Solana client, wallet adapter, and wallet adapter UI packages.
+
+<Tabs items={["npm", "pnpm", "yarn", "bun"]}>
+<Tab>
+
+```bash
+npm install @solana/web3.js @solana/wallet-adapter-base @solana/wallet-adapter-react @solana/wallet-adapter-react-ui
+```
+
+</Tab>
+<Tab>
+
+```bash
+pnpm add @solana/web3.js @solana/wallet-adapter-base @solana/wallet-adapter-react @solana/wallet-adapter-react-ui
+```
+
+</Tab>
+<Tab>
+
+```bash
+yarn add @solana/web3.js @solana/wallet-adapter-base @solana/wallet-adapter-react @solana/wallet-adapter-react-ui
+```
+
+</Tab>
+<Tab>
+
+```bash
+bun add @solana/web3.js @solana/wallet-adapter-base @solana/wallet-adapter-react @solana/wallet-adapter-react-ui
+```
+
+</Tab>
+</Tabs>
+
+## Add wallet providers
+
+Create `app/providers.tsx`.
+
+```tsx
+"use client";
+
+import { type WalletError } from "@solana/wallet-adapter-base";
+import { ConnectionProvider, WalletProvider } from "@solana/wallet-adapter-react";
+import { WalletModalProvider } from "@solana/wallet-adapter-react-ui";
+import "@solana/wallet-adapter-react-ui/styles.css";
+import { type ReactNode, useCallback, useMemo } from "react";
+
+const GORBAGANA_RPC_URL = "https://rpc.gorbagana.wtf";
+
+export function Providers({ children }: { children: ReactNode }) {
+  // Wallet Standard wallets, including Backpack, are detected automatically.
+  const wallets = useMemo(() => [], []);
+
+  const onError = useCallback((error: WalletError) => {
+    console.error(error.name, error.message);
+  }, []);
+
+  return (
+    <ConnectionProvider endpoint={GORBAGANA_RPC_URL}>
+      <WalletProvider autoConnect onError={onError} wallets={wallets}>
+        <WalletModalProvider>{children}</WalletModalProvider>
+      </WalletProvider>
+    </ConnectionProvider>
+  );
+}
+```
+
+Use a fixed Gorbagana RPC URL. Do not use `clusterApiUrl()` here because Gorbagana is not one of the built-in Solana clusters.
+
+Wrap your app in `app/layout.tsx`.
+
+```tsx
+import { Providers } from "./providers";
+
+export default function RootLayout({
+  children,
+}: Readonly<{ children: React.ReactNode }>) {
+  return (
+    <html lang="en">
+      <body>
+        <Providers>{children}</Providers>
+      </body>
+    </html>
+  );
+}
+```
+
+## Show the network
+
+Show the network target before asking for a signature.
+
+```tsx
+export function NetworkLabel() {
+  return (
+    <dl>
+      <dt>Network</dt>
+      <dd>Gorbagana</dd>
+      <dt>RPC</dt>
+      <dd>https://rpc.gorbagana.wtf</dd>
+    </dl>
+  );
+}
+```
+
+## Add a connect button
+
+Create a client component for wallet connection.
+
+```tsx
+"use client";
+
+import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
+
+export function ConnectWalletButton() {
+  return <WalletMultiButton />;
+}
+```
+
+## Read native GOR balance
+
+Use `useConnection` and `useWallet` to read the connected wallet balance.
+
+```tsx
+"use client";
+
+import { useConnection, useWallet } from "@solana/wallet-adapter-react";
+import { LAMPORTS_PER_SOL } from "@solana/web3.js";
+import { useEffect, useState } from "react";
+
+function formatGor(lamports: number) {
+  return (lamports / LAMPORTS_PER_SOL).toLocaleString(undefined, {
+    maximumFractionDigits: 9,
+  });
+}
+
+export function WalletBalance() {
+  const { connection } = useConnection();
+  const { publicKey } = useWallet();
+  const [balanceLamports, setBalanceLamports] = useState<number | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadBalance() {
+      if (!publicKey) {
+        setBalanceLamports(null);
+        return;
+      }
+
+      const lamports = await connection.getBalance(publicKey, "confirmed");
+
+      if (!cancelled) {
+        setBalanceLamports(lamports);
+      }
+    }
+
+    loadBalance().catch(() => {
+      if (!cancelled) setBalanceLamports(null);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [connection, publicKey]);
+
+  if (!publicKey) return null;
+
+  return (
+    <p>
+      {balanceLamports === null ? "Loading..." : `${formatGor(balanceLamports)} GOR`}
+    </p>
+  );
+}
+```
+
+## Send a transaction
+
+Use the connected wallet to sign and submit a small native GOR transfer.
+
+```tsx
+"use client";
+
+import { WalletNotConnectedError } from "@solana/wallet-adapter-base";
+import { useConnection, useWallet } from "@solana/wallet-adapter-react";
+import {
+  LAMPORTS_PER_SOL,
+  PublicKey,
+  SystemProgram,
+  Transaction,
+} from "@solana/web3.js";
+import { useCallback, useState } from "react";
+
+const GOR_AMOUNT = 0.001;
+
+export function SendGorButton({
+  recipientAddress,
+}: {
+  recipientAddress: string;
+}) {
+  const { connection } = useConnection();
+  const { publicKey, sendTransaction } = useWallet();
+  const [signature, setSignature] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [isSending, setIsSending] = useState(false);
+
+  const sendGor = useCallback(async () => {
+    if (!publicKey) throw new WalletNotConnectedError();
+
+    const recipient = new PublicKey(recipientAddress);
+    const lamports = Math.round(GOR_AMOUNT * LAMPORTS_PER_SOL);
+
+    const transaction = new Transaction().add(
+      SystemProgram.transfer({
+        fromPubkey: publicKey,
+        toPubkey: recipient,
+        lamports,
+      }),
+    );
+
+    const {
+      context: { slot: minContextSlot },
+      value: { blockhash, lastValidBlockHeight },
+    } = await connection.getLatestBlockhashAndContext("confirmed");
+
+    transaction.feePayer = publicKey;
+    transaction.recentBlockhash = blockhash;
+
+    const txSignature = await sendTransaction(transaction, connection, {
+      minContextSlot,
+    });
+
+    await connection.confirmTransaction(
+      {
+        blockhash,
+        lastValidBlockHeight,
+        signature: txSignature,
+      },
+      "confirmed",
+    );
+
+    setSignature(txSignature);
+  }, [connection, publicKey, recipientAddress, sendTransaction]);
+
+  const onClick = useCallback(async () => {
+    setError(null);
+    setIsSending(true);
+
+    try {
+      await sendGor();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Transaction failed");
+    } finally {
+      setIsSending(false);
+    }
+  }, [sendGor]);
+
+  return (
+    <div>
+      <button disabled={!publicKey || isSending} onClick={onClick} type="button">
+        {isSending ? "Sending..." : "Send 0.001 GOR"}
+      </button>
+
+      {signature ? (
+        <a
+          href={`https://explorer.gorbagana.wtf/tx/${signature}`}
+          rel="noreferrer"
+          target="_blank"
+        >
+          Open in Explorer
+        </a>
+      ) : null}
+
+      {error ? <p role="alert">{error}</p> : null}
+    </div>
+  );
+}
+```
+
+`sendTransaction` asks the connected wallet to sign and submit through the Gorbagana connection. Rebuild the transaction if the blockhash expires.
+
+If your app needs explicit signing before submission, check that `signTransaction` exists on `useWallet()` before calling it.
+
+## UX checklist
+
+Show these details before asking the user to sign:
+
+| Item | Why |
+| --- | --- |
+| Network | Confirms the app is using Gorbagana RPC |
+| Sender | Shows the connected wallet address |
+| Recipient | Prevents accidental transfers |
+| Amount | Shows native GOR amount before signing |
+| Fee payer | Shows which wallet pays transaction fees |
+| Explorer link | Gives the user a place to verify the result |
+
+<Callout type="warn" title="Never put private keys in frontend code">
+  Browser apps should ask wallets to sign transactions. Keep deployment keypairs and server keys out of client bundles.
+</Callout>
+
+## Common frontend issues
+
+<Accordions type="single">
+<Accordion title="Backpack does not appear">
+
+Install or update Backpack, reload the page, and confirm the provider component renders on the client. Wallet Standard wallets are detected automatically, so `wallets={[]}` is valid for Backpack.
+
+</Accordion>
+<Accordion title="The app reads the wrong network">
+
+Check the `ConnectionProvider` endpoint. It should be `https://rpc.gorbagana.wtf`. Show that network target in the UI before signing.
+
+</Accordion>
+<Accordion title="The transaction was signed but not found">
+
+Search the exact signature in the explorer. If it does not appear, search the sender address, then rebuild the transaction with a fresh blockhash before retrying.
+
+</Accordion>
+<Accordion title="The wallet has no native GOR">
+
+Search the connected Backpack address in the explorer. If the address has no native GOR, use the [Bridge](/docs/network/bridge) before sending app transactions.
+
+</Accordion>
+</Accordions>
+
+## Production checklist
+
+Before shipping a frontend flow:
+
+- show network, sender, recipient, amount, and fee payer
+- use a fresh blockhash for each transaction attempt
+- disable the submit button while a transaction is in progress
+- show the transaction signature and explorer link after submission
+- search the explorer before retrying a submitted transaction
+- keep keypairs and private keys out of browser code
+
+## Next steps
+
+<Cards>
+  <Card icon={<RadioTower />} title="RPC setup" href="/docs/network/rpc">
+    Configure the Gorbagana endpoint in clients and scripts.
+  </Card>
+  <Card icon={<Backpack />} title="Wallet setup" href="/docs/build/wallets">
+    Configure Backpack and local keypairs for Gorbagana.
+  </Card>
+  <Card icon={<Boxes />} title="First app" href="/docs/guides/first-app">
+    Run a small TypeScript script outside the browser.
+  </Card>
+  <Card icon={<Braces />} title="Anchor client" href="/docs/guides/anchor-client">
+    Call a deployed Anchor program from TypeScript.
+  </Card>
+  <Card icon={<Send />} title="Send GOR" href="/docs/guides/send-gor">
+    Send native GOR with the Solana CLI.
+  </Card>
+  <Card icon={<ReceiptText />} title="Fees" href="/docs/network/fees">
+    Show fee payer, recipient, amount, and explorer links before signing.
+  </Card>
+  <Card icon={<ShieldCheck />} title="Security checklist" href="/docs/build/security-checklist">
+    Review wallet-facing program risks before sending write transactions.
+  </Card>
+  <Card icon={<Search />} title="Inspect transaction" href="/docs/guides/inspect-transaction">
+    Verify signatures, logs, fees, and account changes.
+  </Card>
+  <Card icon={<TriangleAlert />} title="Troubleshooting" href="/docs/troubleshooting">
+    Fix wallet, RPC, and transaction issues.
+  </Card>
+</Cards>

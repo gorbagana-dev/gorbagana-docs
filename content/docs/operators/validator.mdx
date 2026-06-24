@@ -1,0 +1,281 @@
+---
+title: Run a validator
+description: Prepare a Gorbagana consensus validator.
+icon: ServerCog
+---
+
+import { Activity, KeyRound, RadioTower, ShieldCheck } from 'lucide-react';
+
+This guide explains what you need before you run a Gorbagana consensus validator.
+
+A consensus validator is not the same as an RPC node. It votes, participates in consensus, needs funded hot keys, and requires continuous monitoring. If you only need an endpoint for apps, run an [RPC node](/docs/operators/rpc-node) instead.
+
+<Callout type="warn" title="Confirm current network parameters">
+  Before you fund a production validator, confirm the current entrypoint, known validator identity, genesis hash, validator release, and staking process with Gorbagana maintainers.
+</Callout>
+
+## What a validator does
+
+A validator:
+
+- replays the ledger;
+- verifies blocks;
+- votes through a vote account;
+- pays vote transaction fees from its identity account;
+- produces blocks when selected by the network.
+
+A validator should be reachable, caught up, voting, and backed by delegated stake before you treat it as production infrastructure.
+
+## Key model
+
+Keep validator keys separate.
+
+| Key or account | Where it lives | Use |
+| --- | --- | --- |
+| Validator identity | Hot keypair on the validator host | Pays vote transaction fees and signs validator activity |
+| Vote account | On-chain account | Receives delegation and records validator votes |
+| Vote authority | Hot signer, often the identity | Signs votes for the vote account |
+| Withdraw authority | Offline key | Controls vote account withdrawals and sensitive changes |
+
+Keep only operational balances on hot keys. Keep the withdraw authority offline and away from the validator host.
+
+## Prepare the host
+
+Use a dedicated Linux machine for a production validator.
+
+Plan for at least:
+
+- CPU: high-clock multi-core CPU with modern instruction support.
+- RAM: 256 GB+ for validator operations; use more if you also expose heavy RPC.
+- Storage: separate NVMe storage for ledger and accounts where possible.
+- Network: stable low-latency connection with open gossip and dynamic ports.
+- Monitoring: process health, slot progress, disk, memory, and network alerts.
+
+## Network values
+
+Confirm these values before you start the validator.
+
+<ReferenceList items={[
+  {
+    label: "Entrypoint",
+    value: "gorbagana.vaasl.io:8001",
+    description: "Use as the trusted gossip entrypoint for node startup.",
+  },
+  {
+    label: "Known validator",
+    value: "EkDhrb9ndZ2YtwPZoGipeDoJx9jsNzasHvXsRHJX2t2Y",
+    description: "Use with known-validator configuration when joining the network.",
+  },
+  {
+    label: "Genesis hash",
+    value: "9Xev9AWhZjfkBzkt2uap5JYeWxn48L2N21JA76bWebWd",
+    description: "Use to prevent the validator from joining the wrong network.",
+  },
+]} />
+
+## Set up the validator
+
+Complete these steps on the validator host unless a step says to keep a key offline.
+
+<Steps>
+<Step>
+
+### Configure the CLI
+
+Point the Solana-compatible CLI at Gorbagana.
+
+```bash
+RPC_URL=https://rpc.gorbagana.wtf
+
+solana config set --url "$RPC_URL"
+solana config get
+```
+
+Check the network before you create operator accounts.
+
+```bash
+solana transaction-count
+solana epoch-info
+solana genesis-hash
+```
+
+Check the live network version before you install or upgrade node software.
+
+```bash
+curl https://rpc.gorbagana.wtf \
+  -H "content-type: application/json" \
+  --data @- <<'JSON'
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "getVersion"
+}
+JSON
+```
+
+</Step>
+<Step>
+
+### Create operator keypairs
+
+Create a local directory for validator keys.
+
+```bash
+KEYDIR=~/gor-validator
+
+mkdir -p "$KEYDIR"
+chmod 700 "$KEYDIR"
+cd "$KEYDIR"
+```
+
+Create the validator identity.
+
+```bash
+solana-keygen new -o identity.json
+solana-keygen pubkey identity.json
+```
+
+Create the vote account keypair.
+
+```bash
+solana-keygen new -o vote.json
+solana-keygen pubkey vote.json
+```
+
+Create the withdraw authority separately and move it offline after vote account creation.
+
+```bash
+solana-keygen new -o withdraw.json
+solana-keygen pubkey withdraw.json
+```
+
+</Step>
+<Step>
+
+### Fund the identity
+
+Send native GOR to the validator identity before you create the vote account.
+
+```bash
+solana config set --keypair identity.json
+solana balance identity.json
+```
+
+The identity account signs the vote account creation transaction and must keep enough native GOR to pay ongoing vote transaction fees. Do not keep treasury-sized balances on the validator host.
+
+</Step>
+<Step>
+
+### Create the vote account
+
+Create the vote account after the identity is funded.
+
+```bash
+solana create-vote-account \
+  vote.json \
+  identity.json \
+  withdraw.json \
+  --commission 10
+```
+
+Check the vote account.
+
+```bash
+PUBKEY_CMD="solana-keygen pubkey"
+VOTE_ACCOUNT=$($PUBKEY_CMD vote.json)
+solana vote-account $VOTE_ACCOUNT
+```
+
+</Step>
+<Step>
+
+### Start the validator
+
+Use the current Gorbagana validator release for the network you are joining. The startup shape follows Agave/Solana validator operations.
+
+Create the ledger and accounts directories before you start.
+
+```bash
+ROOT=/mnt/gorbagana
+
+sudo mkdir -p "$ROOT/ledger" "$ROOT/accounts"
+sudo chown -R "$USER":"$USER" "$ROOT"
+```
+
+```bash
+IDENTITY=identity.json
+VOTE=vote.json
+ROOT=/mnt/gorbagana
+LEDGER="$ROOT/ledger"
+ACCOUNTS="$ROOT/accounts"
+ENTRYPOINT="gorbagana.vaasl.io:8001"
+KNOWN_VALIDATOR="EkDhrb9ndZ2YtwPZoGipeDoJx9jsNzasHvXsRHJX2t2Y"
+GENESIS_HASH="9Xev9AWhZjfkBzkt2uap5JYeWxn48L2N21JA76bWebWd"
+
+agave-validator \
+  --identity "$IDENTITY" \
+  --vote-account "$VOTE" \
+  --entrypoint "$ENTRYPOINT" \
+  --known-validator "$KNOWN_VALIDATOR" \
+  --expected-genesis-hash "$GENESIS_HASH" \
+  --ledger "$LEDGER" \
+  --accounts "$ACCOUNTS" \
+  --dynamic-port-range 8000-8020 \
+  --rpc-port 8899 \
+  --private-rpc \
+  --wal-recovery-mode skip_any_corrupted_record \
+  --log validator.log
+```
+
+Use `--private-rpc` for a consensus validator unless you explicitly operate a protected public RPC service. For most production setups, keep consensus validation and public RPC traffic on separate hosts.
+
+</Step>
+<Step>
+
+### Verify the validator
+
+Check catchup status.
+
+```bash
+solana catchup --our-localhost
+```
+
+Check the validator list.
+
+```bash
+solana validators
+```
+
+Watch logs.
+
+```bash
+tail -f validator.log
+```
+
+Open the [Explorer validator list](https://explorer.gorbagana.wtf/validators) and search for your validator identity or vote account.
+
+</Step>
+</Steps>
+
+## Security checklist
+
+<Cards>
+  <Card icon={<KeyRound />} title="Keep withdraw authority offline">
+    The withdraw authority can control vote account funds and sensitive account changes.
+  </Card>
+  <Card icon={<ShieldCheck />} title="Limit hot balances">
+    Keep enough native GOR on the identity for operations, not long-term storage.
+  </Card>
+  <Card icon={<RadioTower />} title="Separate public RPC">
+    Do not mix high-volume public RPC traffic with consensus voting on the same host.
+  </Card>
+  <Card icon={<Activity />} title="Monitor continuously">
+    Alert on slot lag, missed votes, disk pressure, memory pressure, and process restarts.
+  </Card>
+</Cards>
+
+## Next steps
+
+- Read [Operations](/docs/operators/operations) before running a production node.
+- Read [Fees](/docs/network/fees) to understand native GOR fee balances.
+- Read [Solana compatibility](/docs/concepts/solana-compatibility) for tooling differences.

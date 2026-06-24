@@ -1,0 +1,48 @@
+---
+title: Inspect a transaction
+description: Verify a Gorbagana transaction in the explorer.
+icon: Search
+---
+
+import { RadioTower, Search } from 'lucide-react';
+
+Use the explorer when you need to confirm that a transaction landed on Gorbagana or understand why it failed.
+
+## Find the transaction
+
+Search by signature when you have it from a wallet, CLI, or app.
+
+1. Open the [Explorer](https://explorer.gorbagana.wtf).
+2. Paste the transaction signature into search.
+3. Open the transaction result.
+
+## Check the result
+
+Review the core fields first.
+
+| Field | What to check |
+| --- | --- |
+| Status | Confirm whether the transaction succeeded or failed |
+| Slot | Confirm when the transaction landed |
+| Fee | Check the transaction fee paid |
+| Logs | Debug program errors and compute usage |
+| Account changes | Confirm balance or account updates |
+
+## Inspect related accounts
+
+Open account links from the transaction when you need more context.
+
+- Sender and recipient accounts show balance and activity.
+- Program accounts show program-related transactions.
+- New accounts created by a transaction appear in account changes or inner instructions.
+
+## Next steps
+
+<Cards>
+  <Card icon={<Search />} title="Explorer" href="/docs/network/explorer">
+    Learn what else the explorer can inspect.
+  </Card>
+  <Card icon={<RadioTower />} title="RPC" href="/docs/network/rpc">
+    Query the network directly from scripts.
+  </Card>
+</Cards>

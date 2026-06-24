@@ -1,0 +1,306 @@
+---
+title: Run an RPC node
+description: Run a dedicated Gorbagana RPC node for applications and infrastructure.
+icon: RadioTower
+---
+
+import { Activity, HardDrive, ShieldCheck, Terminal } from 'lucide-react';
+
+This guide shows the operating shape for a dedicated Gorbagana RPC node.
+
+Gorbagana follows the Solana-compatible validator/RPC process model: an RPC node runs the node software, serves JSON-RPC and WebSocket traffic, and usually does not vote. Use this setup when your app, indexer, bot, or internal service needs a dedicated endpoint.
+
+<Callout type="warn" title="Protect public RPC endpoints">
+  Do not expose a raw RPC process directly to the public internet without rate limits, request filtering, monitoring, and firewall rules.
+</Callout>
+
+## RPC node role
+
+An RPC node:
+
+- reads network state;
+- serves JSON-RPC requests;
+- serves WebSocket subscriptions;
+- simulates and sends transactions;
+- stores a local ledger window;
+- usually runs without a vote account.
+
+Run a [validator](/docs/operators/validator) instead if you want to participate in consensus and manage voting infrastructure.
+
+## Requirements
+
+Use a dedicated Linux host for production RPC traffic.
+
+Plan for at least:
+
+- CPU: 16+ cores for a private or lightly shared endpoint.
+- RAM: 256 GB minimum; 512 GB+ if you enable heavy account indexing.
+- Storage: 2 TB+ NVMe for ledger and accounts.
+- Network: stable high-bandwidth connection.
+- Software: current Gorbagana validator release, Solana-compatible CLI tools, and a process manager such as `systemd`.
+- Edge: TLS proxy, firewall, logging, and rate limits if the endpoint is public.
+
+RPC requirements depend heavily on traffic shape. WebSocket subscriptions, `getProgramAccounts`, simulations, and historical queries need more memory and I/O than simple balance reads.
+
+## Network values
+
+Confirm these values before you start a production node.
+
+<ReferenceList items={[
+  {
+    label: "Entrypoint",
+    value: "gorbagana.vaasl.io:8001",
+    description: "Use as the trusted gossip entrypoint for node startup.",
+  },
+  {
+    label: "Known validator",
+    value: "EkDhrb9ndZ2YtwPZoGipeDoJx9jsNzasHvXsRHJX2t2Y",
+    description: "Use with known-validator configuration when joining the network.",
+  },
+  {
+    label: "Genesis hash",
+    value: "9Xev9AWhZjfkBzkt2uap5JYeWxn48L2N21JA76bWebWd",
+    description: "Use to prevent the node from joining the wrong network.",
+  },
+]} />
+
+Before you run the node, also choose the ledger path, accounts path, public RPC hostname, firewall ports, and validator release.
+
+Use the public RPC only for setup checks and comparison.
+
+```bash
+solana config set --url https://rpc.gorbagana.wtf
+solana epoch-info
+solana genesis-hash
+```
+
+Check the live network version before you install or upgrade node software.
+
+```bash
+curl https://rpc.gorbagana.wtf \
+  -H "content-type: application/json" \
+  --data @- <<'JSON'
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "getVersion"
+}
+JSON
+```
+
+## Set up the RPC node
+
+Complete these steps on the RPC host.
+
+<Steps>
+<Step>
+
+### Create a node identity
+
+Create a keypair for the RPC node identity.
+
+```bash
+KEYDIR=/opt/gorbagana
+
+sudo mkdir -p "$KEYDIR"
+sudo chown "$USER":"$USER" "$KEYDIR"
+chmod 700 "$KEYDIR"
+
+solana-keygen new -o "$KEYDIR/rpc-identity.json"
+solana-keygen pubkey "$KEYDIR/rpc-identity.json"
+```
+
+Keep this identity separate from wallets, deployment keys, and validator vote authorities.
+
+</Step>
+<Step>
+
+### Prepare storage
+
+Create separate directories for ledger and account data.
+
+```bash
+ROOT=/mnt/gorbagana
+
+sudo mkdir -p "$ROOT/ledger" "$ROOT/accounts"
+sudo chown -R "$USER":"$USER" "$ROOT"
+```
+
+Use fast local NVMe storage. Network disks and slow SSDs can cause slot lag under load.
+
+</Step>
+<Step>
+
+### Create the startup script
+
+Create `/opt/gorbagana/rpc.sh`.
+
+```bash
+cat > /opt/gorbagana/rpc.sh <<'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+
+ENTRYPOINT="gorbagana.vaasl.io:8001"
+KNOWN_VALIDATOR="EkDhrb9ndZ2YtwPZoGipeDoJx9jsNzasHvXsRHJX2t2Y"
+GENESIS_HASH="9Xev9AWhZjfkBzkt2uap5JYeWxn48L2N21JA76bWebWd"
+
+exec agave-validator \
+  --identity /opt/gorbagana/rpc-identity.json \
+  --entrypoint "$ENTRYPOINT" \
+  --known-validator "$KNOWN_VALIDATOR" \
+  --only-known-rpc \
+  --expected-genesis-hash "$GENESIS_HASH" \
+  --ledger /mnt/gorbagana/ledger \
+  --accounts /mnt/gorbagana/accounts \
+  --dynamic-port-range 8000-8020 \
+  --rpc-port 8899 \
+  --rpc-bind-address 127.0.0.1 \
+  --full-rpc-api \
+  --no-voting \
+  --private-rpc \
+  --wal-recovery-mode skip_any_corrupted_record \
+  --limit-ledger-size \
+  --log /opt/gorbagana/rpc.log
+EOF
+
+chmod +x /opt/gorbagana/rpc.sh
+```
+
+The important RPC flags are:
+
+- `--no-voting`: runs the node without consensus voting.
+- `--full-rpc-api`: enables the full RPC method set.
+- `--private-rpc`: keeps the RPC contact information out of gossip.
+- `--rpc-bind-address 127.0.0.1`: binds RPC locally so a proxy can control public access.
+- `--only-known-rpc`: asks the node to use RPC services from known validators.
+- `--expected-genesis-hash`: prevents the node from joining the wrong network.
+- `--wal-recovery-mode skip_any_corrupted_record`: lets the node recover from some local ledger write-ahead-log corruption.
+- `--limit-ledger-size`: limits local ledger growth.
+
+</Step>
+<Step>
+
+### Create a system service
+
+Create `/etc/systemd/system/gorbagana-node-rpc.service`.
+
+```ini
+[Unit]
+Description=Gorbagana RPC node
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=<operator-user>
+Group=<operator-group>
+ExecStart=/opt/gorbagana/rpc.sh
+Restart=always
+RestartSec=5
+LimitNOFILE=1000000
+LimitMEMLOCK=2000000000
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Replace `<operator-user>` and `<operator-group>` with the Linux user and group that own `/opt/gorbagana` and `/mnt/gorbagana`.
+
+Start the service.
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl enable gorbagana-node-rpc
+sudo systemctl start gorbagana-node-rpc
+```
+
+Check logs.
+
+```bash
+journalctl -u gorbagana-node-rpc -f
+```
+
+</Step>
+<Step>
+
+### Check health
+
+Check the local RPC endpoint.
+
+```bash
+RPC_URL=http://127.0.0.1:8899
+
+curl "$RPC_URL" \
+  -H "content-type: application/json" \
+  --data @- <<'JSON'
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "getHealth"
+}
+JSON
+```
+
+Expected response:
+
+```json
+{
+  "jsonrpc": "2.0",
+  "result": "ok",
+  "id": 1
+}
+```
+
+Check slot progress.
+
+```bash
+curl "$RPC_URL" \
+  -H "content-type: application/json" \
+  --data @- <<'JSON'
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "getSlot"
+}
+JSON
+```
+
+Compare the result with the public RPC and the [Explorer](https://explorer.gorbagana.wtf).
+
+</Step>
+</Steps>
+
+## Put a proxy in front
+
+Keep the validator process bound locally and expose RPC through a proxy.
+
+At the edge, configure:
+
+- TLS;
+- request body size limits;
+- rate limits;
+- logging;
+- WebSocket support if apps need subscriptions;
+- firewall rules for RPC, gossip, and dynamic ports.
+
+## Protect the endpoint
+
+<Cards>
+  <Card icon={<ShieldCheck />} title="Filter traffic">
+    Limit expensive methods and reject abusive request patterns.
+  </Card>
+  <Card icon={<Activity />} title="Monitor slot lag">
+    Alert when your node falls behind the public endpoint or stops advancing slots.
+  </Card>
+  <Card icon={<HardDrive />} title="Watch storage">
+    Track ledger and account disk usage before the node runs out of space.
+  </Card>
+  <Card icon={<Terminal />} title="Keep commands repeatable">
+    Store startup scripts, service files, and change notes in a private operations repository.
+  </Card>
+</Cards>
+
+## Next steps
+
+- Read [Operations](/docs/operators/operations) for monitoring and troubleshooting.
+- Read [RPC setup](/docs/network/rpc) for client-side configuration.
+- Read [Solana compatibility](/docs/concepts/solana-compatibility) for tooling differences.

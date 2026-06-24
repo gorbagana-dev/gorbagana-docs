@@ -1,0 +1,110 @@
+@import 'tailwindcss';
+@import 'fumadocs-ui/css/neutral.css';
+@import 'fumadocs-ui/css/preset.css';
+
+@theme {
+  --color-fd-background: hsl(0, 0%, 3%);
+  --color-fd-foreground: hsl(0, 0%, 96%);
+  --color-fd-muted: hsl(0, 0%, 8%);
+  --color-fd-muted-foreground: hsl(224, 18%, 67%);
+  --color-fd-popover: hsl(0, 0%, 5%);
+  --color-fd-popover-foreground: hsl(0, 0%, 96%);
+  --color-fd-card: hsl(0, 0%, 5%);
+  --color-fd-card-foreground: hsl(0, 0%, 96%);
+  --color-fd-border: hsla(0, 0%, 100%, 0.12);
+  --color-fd-primary: hsl(139, 100%, 68%);
+  --color-fd-primary-foreground: hsl(0, 0%, 3%);
+  --color-fd-secondary: hsl(0, 0%, 8%);
+  --color-fd-secondary-foreground: hsl(0, 0%, 94%);
+  --color-fd-accent: hsla(139, 100%, 68%, 0.11);
+  --color-fd-accent-foreground: hsl(139, 100%, 72%);
+  --color-fd-ring: hsl(139, 100%, 68%);
+}
+
+.dark {
+  --color-fd-background: hsl(0, 0%, 3%);
+  --color-fd-foreground: hsl(0, 0%, 96%);
+  --color-fd-muted: hsl(0, 0%, 8%);
+  --color-fd-muted-foreground: hsl(224, 18%, 67%);
+  --color-fd-popover: hsl(0, 0%, 5%);
+  --color-fd-popover-foreground: hsl(0, 0%, 96%);
+  --color-fd-card: hsl(0, 0%, 5%);
+  --color-fd-card-foreground: hsl(0, 0%, 96%);
+  --color-fd-border: hsla(0, 0%, 100%, 0.12);
+  --color-fd-primary: hsl(139, 100%, 68%);
+  --color-fd-primary-foreground: hsl(0, 0%, 3%);
+  --color-fd-secondary: hsl(0, 0%, 8%);
+  --color-fd-secondary-foreground: hsl(0, 0%, 94%);
+  --color-fd-accent: hsla(139, 100%, 68%, 0.11);
+  --color-fd-accent-foreground: hsl(139, 100%, 72%);
+  --color-fd-ring: hsl(139, 100%, 68%);
+}
+
+html {
+  background: hsl(0, 0%, 3%);
+  color: hsl(0, 0%, 96%);
+  scrollbar-gutter: stable;
+}
+
+body {
+  background: var(--color-fd-background);
+}
+
+html > body[data-scroll-locked] {
+  margin-right: 0px !important;
+  --removed-body-scroll-bar-size: 0px !important;
+}
+
+::selection {
+  background: hsla(139, 100%, 68%, 0.22);
+}
+
+:where(a) {
+  text-underline-offset: 3px;
+}
+
+#nd-docs-layout,
+#nd-page,
+#nd-sidebar,
+#nd-tocnav {
+  background-image: none !important;
+}
+
+#nd-docs-layout::before,
+#nd-docs-layout::after,
+#nd-page::before,
+#nd-page::after {
+  display: none !important;
+  background-image: none !important;
+}
+
+#nd-page figure.shiki {
+  background: hsl(0, 0%, 4%) !important;
+  border-color: hsla(0, 0%, 100%, 0.1) !important;
+  border-radius: 10px !important;
+  box-shadow: none !important;
+}
+
+#nd-page figure.shiki > .fd-scroll-container {
+  padding-block: 0.95rem !important;
+}
+
+#nd-page figure.shiki pre {
+  line-height: 1.65 !important;
+}
+
+#nd-page figure.shiki .line {
+  padding-right: 3.5rem !important;
+}
+
+#nd-page figure.shiki > .absolute {
+  top: 0.6rem !important;
+  right: 0.6rem !important;
+  background: hsla(0, 0%, 3%, 0.92);
+  border: 1px solid hsla(0, 0%, 100%, 0.08);
+  border-radius: 8px;
+}
+
+#nd-page figure.shiki button {
+  cursor: pointer;
+}

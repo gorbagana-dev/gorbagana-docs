@@ -1,0 +1,6 @@
+{
+  "title": "Reference",
+  "icon": "BookOpen",
+  "defaultOpen": true,
+  "pages": ["index", "glossary", "cheat-sheet", "addresses", "cli", "rpc"]
+}

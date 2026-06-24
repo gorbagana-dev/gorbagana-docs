@@ -1,0 +1,47 @@
+---
+title: Network
+description: Gorbagana network endpoints, token details, and public references.
+icon: Network
+---
+
+import { ArrowRightLeft, Braces, Coins, ReceiptText, RadioTower, Search, ServerCog } from 'lucide-react';
+
+Network values for wallets, scripts, indexers, and deployment tooling.
+
+| Field | Value |
+| --- | --- |
+| Network | Gorbagana |
+| Runtime | SVM |
+| Native token | GOR |
+| Decimals | `9` |
+| RPC | `https://rpc.gorbagana.wtf` |
+| Explorer | `https://explorer.gorbagana.wtf` |
+| Validators | `https://explorer.gorbagana.wtf/validators` |
+| Bridge | `https://bridge.gorbagana.wtf` |
+| Solana token mint | `71Jvq4Epe2FCJ7JFSF7jLXdNk1Wy4Bhqd9iL6bEFELvg` |
+
+## Network pages
+
+<Cards>
+  <Card icon={<RadioTower />} title="RPC setup" href="/docs/network/rpc">
+    Configure clients, scripts, and CLIs.
+  </Card>
+  <Card icon={<Search />} title="Explorer" href="/docs/network/explorer">
+    Inspect transactions, accounts, programs, and validators.
+  </Card>
+  <Card icon={<ArrowRightLeft />} title="Bridge" href="/docs/network/bridge">
+    Move GOR from Solana to native GOR on Gorbagana.
+  </Card>
+  <Card icon={<Coins />} title="Token" href="/docs/network/token">
+    Check decimals, units, and the Solana token mint.
+  </Card>
+  <Card icon={<ReceiptText />} title="Fees" href="/docs/network/fees">
+    Understand fee payer balances, base units, transfers, and deployments.
+  </Card>
+  <Card icon={<ServerCog />} title="Operators" href="/docs/operators">
+    Run RPC nodes, validators, and production infrastructure.
+  </Card>
+  <Card icon={<Braces />} title="Addresses" href="/docs/reference/addresses">
+    Find endpoints, links, token values, and public resources.
+  </Card>
+</Cards>

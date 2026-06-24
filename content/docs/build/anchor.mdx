@@ -1,0 +1,405 @@
+---
+title: Anchor projects
+description: Configure, build, deploy, update, and verify Anchor programs on Gorbagana.
+icon: Blocks
+---
+
+import { Backpack, Blocks, Braces, CheckCircle2, FileCode, FlaskConical, ReceiptText, Search, ShieldCheck, Terminal, TriangleAlert } from 'lucide-react';
+
+Deploy an existing Anchor workspace to Gorbagana. You'll configure `Anchor.toml`, align the Program ID, build the workspace, deploy or upgrade the program, and verify the result in the explorer.
+
+<Callout type="info" title="Gorbagana-specific Anchor docs">
+  This page covers Gorbagana RPC, native GOR funding, deployment verification, and explorer links. Use the [official Anchor docs](https://www.anchor-lang.com/docs) for framework syntax, account constraints, tests, CLI flags, and general client APIs.
+</Callout>
+
+Before a live deploy, run the [Testing](/docs/build/testing) flow and review the [Security checklist](/docs/build/security-checklist).
+
+## Command reference
+
+Use these commands for the common Anchor deployment flow.
+
+| Task | Command |
+| --- | --- |
+| Check Anchor version | `anchor --version` |
+| List workspace program IDs | `anchor keys list` |
+| Sync `declare_id!` with program keypairs | `anchor keys sync` |
+| Build programs and IDLs | `anchor build` |
+| Deploy workspace programs | `anchor deploy` |
+| Upgrade one program | `anchor upgrade <target/deploy/program.so> --program-id <PROGRAM_ID>` |
+| Fetch published IDL | `anchor idl fetch -o <out-file.json> <PROGRAM_ID>` |
+| Show deployed program metadata | `solana program show <PROGRAM_ID>` |
+
+## What you need
+
+Prepare the workspace before you deploy.
+
+| Requirement | Value |
+| --- | --- |
+| RPC endpoint | `https://rpc.gorbagana.wtf` |
+| Wallet | A local keypair funded with native GOR |
+| Tooling | Solana CLI, Rust, and Anchor CLI |
+| Program ID | The address declared in `declare_id!` and used by clients |
+| Explorer | `https://explorer.gorbagana.wtf` |
+
+<Callout type="info" title="Anchor wraps the same loader model">
+  Anchor deploys SVM programs through the same upgradeable loader used by `solana program deploy`. Use [Deploy programs](/docs/build/deploy-programs) when you need lower-level authority, close, or bytecode-management details.
+</Callout>
+
+## Configure Anchor.toml
+
+Point Anchor at Gorbagana with the provider URL and the wallet that pays deployment costs.
+
+```toml
+[provider]
+cluster = "https://rpc.gorbagana.wtf"
+wallet = "~/.config/solana/id.json"
+```
+
+If your frontend needs generated TypeScript IDL types, copy them into a stable folder during builds.
+
+```toml
+[workspace]
+types = "app/src/idl/"
+```
+
+Anchor's official `Anchor.toml` reference defines `[provider]` as the wallet and cluster used by Anchor commands. For Gorbagana, use the RPC URL directly as the cluster value.
+
+## Align the program ID
+
+Anchor programs need one Program ID across the Rust program, generated keypair, workspace config, and clients.
+
+<Steps>
+<Step>
+
+### List workspace keys
+
+Run this from the Anchor workspace root.
+
+```bash
+anchor keys list
+```
+
+</Step>
+<Step>
+
+### Check the generated program keypair
+
+Print the Program ID from the generated keypair.
+
+```bash
+solana address -k ./target/deploy/hello_gorbagana-keypair.json
+```
+
+Replace `hello_gorbagana` with your Anchor program name.
+
+</Step>
+<Step>
+
+### Check declare_id!
+
+Open the program entrypoint and confirm `declare_id!` matches the keypair address.
+
+```rust
+use anchor_lang::prelude::*;
+
+declare_id!("PROGRAM_ID");
+```
+
+</Step>
+<Step>
+
+### Sync keys when they differ
+
+If the generated keypair and `declare_id!` don't match, sync the workspace.
+
+```bash
+anchor keys sync
+```
+
+Review the file changes after syncing. Then rebuild before deploying.
+
+</Step>
+</Steps>
+
+If your workspace keeps a `[programs.<cluster>]` section, set that program entry to the same Program ID. The important rule is simple: clients, `declare_id!`, and deployment keypairs must point to the same address.
+
+## Build the workspace
+
+Build the Anchor workspace after you configure the provider and align program IDs.
+
+```bash
+anchor build
+```
+
+Anchor writes deployment and client artifacts under `target`.
+
+```txt
+target/
+  deploy/
+    hello_gorbagana.so
+    hello_gorbagana-keypair.json
+  idl/
+    hello_gorbagana.json
+  types/
+    hello_gorbagana.ts
+```
+
+The `.so` file is the deployable program. The IDL JSON describes the program interface. The TypeScript file gives clients typed access to that IDL.
+
+## Deploy to Gorbagana
+
+Deploy all workspace programs to the provider cluster from `Anchor.toml`.
+
+```bash
+anchor deploy
+```
+
+You can also pass the provider cluster explicitly.
+
+```bash
+anchor deploy --provider.cluster https://rpc.gorbagana.wtf
+```
+
+Expected output includes a Program ID and transaction signature.
+
+```txt
+Program Id: PROGRAM_ID
+Signature: TRANSACTION_SIGNATURE
+```
+
+Save both values. Your clients call the Program ID. The signature lets you inspect the deployment transaction.
+
+<Callout type="info" title="Use native GOR for deployment">
+  Anchor and Solana CLI output may say SOL or lamports. When the command targets Gorbagana RPC, the fee payer spends native GOR.
+</Callout>
+
+## Verify the deployment
+
+Verify the deployed program before you wire clients to it.
+
+Open the [Explorer](/docs/network/explorer) and search for the deployment signature or Program ID. Check the transaction status, fee payer, logs, and program account.
+
+Confirm the signature from the CLI.
+
+```bash
+solana confirm TRANSACTION_SIGNATURE -v \
+  --url https://rpc.gorbagana.wtf
+```
+
+Show program metadata.
+
+```bash
+solana program show PROGRAM_ID \
+  --url https://rpc.gorbagana.wtf
+```
+
+Expected output includes the Program ID, owner, ProgramData address, upgrade authority, last deployed slot, data length, and balance.
+
+## Use the IDL
+
+Use the local IDL from `target/idl` when you build frontend or script clients.
+
+```txt
+target/idl/hello_gorbagana.json
+target/types/hello_gorbagana.ts
+```
+
+If your project publishes an on-chain IDL, fetch it after deployment.
+
+```bash
+anchor idl fetch -o target/idl/verified.json PROGRAM_ID
+```
+
+If the fetch fails, the program may not have a published IDL account. The local IDL is still useful for your own clients, but explorers and external integrators can only fetch an on-chain IDL if you publish one.
+
+## Update a program
+
+Update a deployed Anchor program while the current upgrade authority still controls it.
+
+1. Change the program source.
+2. Build the workspace.
+
+   ```bash
+   anchor build
+   ```
+
+3. Redeploy the workspace.
+
+   ```bash
+   anchor deploy
+   ```
+
+For a single program, use `anchor upgrade`.
+
+```bash
+anchor upgrade ./target/deploy/hello_gorbagana.so \
+  --program-id PROGRAM_ID \
+  --provider.cluster https://rpc.gorbagana.wtf
+```
+
+Then verify the updated slot and data length.
+
+```bash
+solana program show PROGRAM_ID \
+  --url https://rpc.gorbagana.wtf
+```
+
+## Manage authority
+
+Anchor uses the same upgrade authority model as raw Solana CLI deployments.
+
+Check the current authority.
+
+```bash
+solana program show PROGRAM_ID \
+  --url https://rpc.gorbagana.wtf
+```
+
+Transfer authority when another keypair should control future upgrades.
+
+```bash
+solana program set-upgrade-authority PROGRAM_ID \
+  --new-upgrade-authority ./new-authority-keypair.json \
+  --url https://rpc.gorbagana.wtf
+```
+
+Make the program immutable only when you are sure it should never change again.
+
+```bash
+solana program set-upgrade-authority PROGRAM_ID \
+  --final \
+  --url https://rpc.gorbagana.wtf
+```
+
+<Callout type="warn" title="Immutable means permanent">
+  After you remove upgrade authority, the program cannot be updated or closed.
+</Callout>
+
+## Common issues
+
+<Accordions type="single">
+<Accordion title="The deploy wallet has no native GOR">
+
+Check the wallet Anchor uses.
+
+```bash
+DEPLOYER=$(solana address -k ~/.config/solana/id.json)
+solana balance "$DEPLOYER" \
+  --url https://rpc.gorbagana.wtf
+```
+
+Fund that wallet with native GOR before deploying. Program deployments need more funds than simple transfers because they allocate program data accounts.
+
+</Accordion>
+
+<Accordion title="Anchor is pointed at the wrong cluster">
+
+Check the provider section in `Anchor.toml`.
+
+```toml
+[provider]
+cluster = "https://rpc.gorbagana.wtf"
+wallet = "~/.config/solana/id.json"
+```
+
+If you pass `--provider.cluster`, make sure the command-line value is also `https://rpc.gorbagana.wtf`.
+
+</Accordion>
+
+<Accordion title="The Program ID does not match">
+
+List keys and inspect the generated keypair.
+
+```bash
+anchor keys list
+solana address -k ./target/deploy/hello_gorbagana-keypair.json
+```
+
+If the values differ from `declare_id!`, run:
+
+```bash
+anchor keys sync
+anchor build
+```
+
+Then verify the Program ID before deploying again.
+
+</Accordion>
+
+<Accordion title="The TypeScript IDL file is missing">
+
+Run `anchor build` from the workspace root and check the output folders.
+
+```bash
+anchor build
+ls target/idl
+ls target/types
+```
+
+If you want the type file copied into your frontend, add a `[workspace]` `types` path in `Anchor.toml`.
+
+</Accordion>
+
+<Accordion title="The IDL fetch fails">
+
+Fetching only works when an IDL exists on-chain for that program.
+
+```bash
+anchor idl fetch -o target/idl/verified.json PROGRAM_ID
+```
+
+If this fails, use the local `target/idl/<program>.json` file for your own clients and publish an on-chain IDL only when your release process requires it.
+
+</Accordion>
+
+<Accordion title="The program cannot be upgraded">
+
+Check program metadata.
+
+```bash
+solana program show PROGRAM_ID \
+  --url https://rpc.gorbagana.wtf
+```
+
+If the `Authority` field is missing, the program is immutable. If an authority is present, sign the upgrade with that authority.
+
+</Accordion>
+</Accordions>
+
+## Next steps
+
+<Cards>
+  <Card icon={<FileCode />} title="Deploy programs" href="/docs/build/deploy-programs">
+    Use the lower-level Solana CLI deployment lifecycle.
+  </Card>
+  <Card icon={<FlaskConical />} title="Testing" href="/docs/build/testing">
+    Run local checks and a small live smoke test.
+  </Card>
+  <Card icon={<ShieldCheck />} title="Security checklist" href="/docs/build/security-checklist">
+    Review accounts, signers, PDAs, CPIs, tokens, and authority.
+  </Card>
+  <Card icon={<Braces />} title="Anchor client" href="/docs/guides/anchor-client">
+    Load the IDL and call the deployed program from TypeScript.
+  </Card>
+  <Card icon={<Blocks />} title="Concepts" href="/docs/concepts">
+    Review accounts, programs, transactions, fees, and network surfaces.
+  </Card>
+  <Card icon={<Search />} title="Explorer" href="/docs/network/explorer">
+    Inspect deployment signatures, program accounts, and logs.
+  </Card>
+  <Card icon={<Terminal />} title="CLI reference" href="/docs/reference/cli">
+    Copy common Solana CLI commands for Gorbagana.
+  </Card>
+  <Card icon={<Backpack />} title="Wallet setup" href="/docs/build/wallets">
+    Configure Backpack and local keypairs for Gorbagana.
+  </Card>
+  <Card icon={<CheckCircle2 />} title="Fees" href="/docs/network/fees">
+    Understand why program deployments require a funded keypair.
+  </Card>
+  <Card icon={<ReceiptText />} title="Cheat sheet" href="/docs/reference/cheat-sheet">
+    Copy endpoints, token values, and deployment commands.
+  </Card>
+  <Card icon={<TriangleAlert />} title="Troubleshooting" href="/docs/troubleshooting">
+    Fix failed deploys, missing balances, and wrong-network issues.
+  </Card>
+</Cards>

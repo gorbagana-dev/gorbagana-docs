@@ -1,0 +1,44 @@
+---
+title: Explorer
+description: Use Trash Scan to inspect Gorbagana blocks, transactions, accounts, programs, and validators.
+icon: Search
+---
+
+import { RadioTower, Search } from 'lucide-react';
+
+Use [Trash Scan](https://explorer.gorbagana.wtf) to confirm activity, debug failed transactions, and inspect network state.
+
+## What you can inspect
+
+Use the explorer to verify activity and debug network interactions.
+
+| Item | Use it for |
+| --- | --- |
+| Transaction signature | Check status, logs, fees, and account changes |
+| Wallet address | Review balance and recent activity |
+| Program address | Inspect program-owned accounts and instructions |
+| Validator page | Check active validators |
+
+## Inspect a transaction
+
+Search for a transaction signature when you want to confirm that a wallet action landed on-chain.
+
+1. Open [Trash Scan](https://explorer.gorbagana.wtf).
+2. Paste the transaction signature into search.
+3. Check the status, slot, fee, and account changes.
+4. Review logs if the transaction failed.
+
+## Validator page
+
+Open the [validator page](https://explorer.gorbagana.wtf/validators) when you need a quick view of the current validator set.
+
+## Next steps
+
+<Cards>
+  <Card icon={<RadioTower />} title="RPC" href="/docs/network/rpc">
+    Configure clients and scripts for Gorbagana.
+  </Card>
+  <Card icon={<Search />} title="Inspect a transaction" href="/docs/guides/inspect-transaction">
+    Follow a focused transaction lookup guide.
+  </Card>
+</Cards>

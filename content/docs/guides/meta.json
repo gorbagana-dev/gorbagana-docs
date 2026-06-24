@@ -1,0 +1,6 @@
+{
+  "title": "Guides",
+  "icon": "BookOpen",
+  "defaultOpen": true,
+  "pages": ["index", "first-app", "anchor-client", "send-gor", "inspect-transaction"]
+}

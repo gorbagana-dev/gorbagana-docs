@@ -1,0 +1,134 @@
+---
+title: Setup
+description: Configure Solana-compatible tooling for Gorbagana.
+icon: Terminal
+---
+
+import { Backpack, FileCode, MonitorSmartphone } from 'lucide-react';
+
+Configure your local SVM tooling to send commands to Gorbagana instead of a Solana cluster.
+
+## Requirements
+
+Install the tools you need for your workflow.
+
+| Tool | Use |
+| --- | --- |
+| Solana CLI | Configure RPC, check balances, deploy programs |
+| Rust | Build native SVM programs |
+| Anchor | Build and test Anchor programs |
+| Node.js | Run TypeScript clients and app tooling |
+
+Use the official Solana and Anchor install guides for tool installation. These docs focus on the Gorbagana-specific values you need after the tools are installed.
+
+<ReferenceList columns="two" items={[
+  {
+    label: "Solana CLI install",
+    value: "https://solana.com/docs/intro/installation/dependencies",
+    href: "https://solana.com/docs/intro/installation/dependencies",
+    description: "Install the Solana CLI and local program tooling.",
+  },
+  {
+    label: "Anchor install",
+    value: "https://www.anchor-lang.com/docs/installation",
+    href: "https://www.anchor-lang.com/docs/installation",
+    description: "Install Anchor and its required dependencies.",
+  },
+]} />
+
+## Configure RPC
+
+Set Gorbagana as the active RPC endpoint.
+
+<Tabs items={["CLI", "TypeScript"]}>
+<Tab>
+
+```bash
+solana config set --url https://rpc.gorbagana.wtf
+```
+
+Check your active config:
+
+```bash
+solana config get
+```
+
+The `RPC URL` value should show the Gorbagana endpoint.
+
+</Tab>
+<Tab>
+
+```ts
+import { Connection } from "@solana/web3.js";
+
+export const connection = new Connection(
+  "https://rpc.gorbagana.wtf",
+  "confirmed",
+);
+```
+
+</Tab>
+</Tabs>
+
+## Check a wallet balance
+
+Use the CLI to check a wallet after you bridge or receive GOR.
+
+```bash
+solana balance
+```
+
+To check another address, pass it explicitly:
+
+```bash
+solana balance WALLET_ADDRESS
+```
+
+## Install the TypeScript client
+
+Install `@solana/web3.js` when your app or script needs to read accounts, create transactions, or submit signed transactions.
+
+<Tabs items={["npm", "pnpm", "yarn", "bun"]}>
+<Tab>
+
+```bash
+npm install @solana/web3.js
+```
+
+</Tab>
+<Tab>
+
+```bash
+pnpm add @solana/web3.js
+```
+
+</Tab>
+<Tab>
+
+```bash
+yarn add @solana/web3.js
+```
+
+</Tab>
+<Tab>
+
+```bash
+bun add @solana/web3.js
+```
+
+</Tab>
+</Tabs>
+
+## Next steps
+
+<Cards>
+  <Card icon={<FileCode />} title="Deploy programs" href="/docs/build/deploy-programs">
+    Deploy a program to Gorbagana.
+  </Card>
+  <Card icon={<Backpack />} title="Wallet setup" href="/docs/build/wallets">
+    Connect wallet-based apps and scripts.
+  </Card>
+  <Card icon={<MonitorSmartphone />} title="Frontend apps" href="/docs/build/frontend">
+    Connect Backpack, read balances, and send transactions from a React app.
+  </Card>
+</Cards>

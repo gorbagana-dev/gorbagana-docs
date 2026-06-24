@@ -1,0 +1,103 @@
+---
+title: Concepts
+description: The Gorbagana model for accounts, transactions, programs, fees, RPC, explorer, and bridge flow.
+icon: BookOpenText
+---
+
+import { ArrowRightLeft, Boxes, Coins, FileCode, GitCompareArrows, RadioTower, ReceiptText, Search, Wallet } from 'lucide-react';
+
+Gorbagana follows the SVM developer model. If you already know Solana accounts, transactions, programs, and RPC clients, the same mental model is the right starting point.
+
+## What is compatible
+
+Solana-compatible tooling is the default path for Gorbagana development.
+
+<Cards>
+  <Card icon={<RadioTower />} title="RPC clients" href="/docs/network/rpc">
+    Connect Solana-compatible JSON-RPC clients to Gorbagana.
+  </Card>
+  <Card icon={<Wallet />} title="Wallets" href="/docs/build/wallets">
+    Use Backpack for wallet-based activity and local keypairs for CLI work.
+  </Card>
+  <Card icon={<FileCode />} title="Programs" href="/docs/build/deploy-programs">
+    Build and deploy Solana-compatible program artifacts.
+  </Card>
+  <Card icon={<GitCompareArrows />} title="Gorbagana and Solana" href="/docs/concepts/solana-compatibility">
+    See what carries over from Solana and what changes on Gorbagana.
+  </Card>
+</Cards>
+
+## Accounts
+
+Accounts are addresses that hold native GOR, program data, or executable programs. Wallet accounts are controlled by keypairs. Program accounts contain executable code. Program-owned accounts store application state.
+
+When you inspect an address in the explorer, first check what owns it:
+
+| Account type | What it means |
+| --- | --- |
+| Wallet account | Holds native GOR and signs transactions |
+| Program account | Executable SVM program |
+| Program-owned account | State created and controlled by a program |
+| System Program account | Native account creation and transfers |
+
+## Transactions
+
+A transaction is the unit of execution. It contains signatures, a recent blockhash, account addresses, and one or more instructions.
+
+Transactions are atomic: either every instruction succeeds or the whole transaction fails. When a transaction fails, use the explorer logs to find the failed instruction or program error.
+
+<Cards>
+  <Card icon={<ReceiptText />} title="Inspect a transaction" href="/docs/guides/inspect-transaction">
+    Check status, fees, logs, and account changes.
+  </Card>
+  <Card icon={<Search />} title="Explorer" href="/docs/network/explorer">
+    Search by signature, wallet address, or program ID.
+  </Card>
+</Cards>
+
+## Programs
+
+Programs are the on-chain code that transactions invoke. You can deploy Solana-compatible programs with the Solana CLI or Anchor, then call them from clients through transactions.
+
+Use Anchor when you want IDL generation, account validation helpers, and TypeScript client support. Use native Rust or lower-level tooling when you need more control over the program structure.
+
+## Fees and native GOR
+
+GOR is the native token used for transaction fees and deployments on Gorbagana.
+
+One `GOR` equals `1,000,000,000` base units.
+
+Simple transfers need a small fee balance. Program deployments need more because they write program data accounts.
+
+<Cards>
+  <Card icon={<Coins />} title="Token reference" href="/docs/network/token">
+    Check GOR decimals, base units, and the Solana token mint.
+  </Card>
+  <Card icon={<ArrowRightLeft />} title="Bridge" href="/docs/network/bridge">
+    Move GOR between Solana and Gorbagana.
+  </Card>
+</Cards>
+
+## RPC, explorer, and bridge
+
+Use these three surfaces together:
+
+| Surface | Use |
+| --- | --- |
+| RPC | Read state, send transactions, deploy programs |
+| Explorer | Inspect transactions, accounts, programs, and validators |
+| Bridge | Move between the Solana GOR token and native GOR |
+
+## Next steps
+
+<Cards>
+  <Card icon={<GitCompareArrows />} title="Gorbagana and Solana" href="/docs/concepts/solana-compatibility">
+    Review compatibility, renamed values, and migration checks.
+  </Card>
+  <Card icon={<Boxes />} title="First app" href="/docs/guides/first-app">
+    Read balance and send a tiny GOR transfer from TypeScript.
+  </Card>
+  <Card icon={<FileCode />} title="Deploy programs" href="/docs/build/deploy-programs">
+    Deploy a Solana-compatible program artifact.
+  </Card>
+</Cards>

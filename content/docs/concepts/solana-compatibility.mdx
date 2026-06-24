@@ -1,0 +1,251 @@
+---
+title: Gorbagana and Solana
+description: What carries over from Solana development, what changes on Gorbagana, and when to use each set of docs.
+icon: GitCompareArrows
+---
+
+import { ArrowRightLeft, Backpack, Blocks, Braces, Coins, FileCode, RadioTower, ReceiptText, Search, Terminal, Wallet } from 'lucide-react';
+
+Use Solana knowledge as the starting point for Gorbagana development. The account model, transaction model, program model, RPC shape, and deployment tooling stay familiar; network values, native token assumptions, explorer links, wallet guidance, and bridge flow change.
+
+## Compatibility map
+
+Use this table when you are moving a Solana app, script, or deployment process to Gorbagana.
+
+| Surface | Carries over | Change for Gorbagana |
+| --- | --- | --- |
+| Accounts | Wallet accounts, program accounts, program-owned state, owners, rent/account allocation concepts | Fund accounts with native GOR |
+| Transactions | Signatures, recent blockhashes, instructions, account metas, atomic execution | Show GOR amounts and Gorbagana explorer links |
+| Programs | SBF artifacts, Program ID, ProgramData, upgrade authority, PDAs, CPIs | Deploy to `https://rpc.gorbagana.wtf` |
+| RPC | Solana JSON-RPC shape, commitments, WebSocket subscriptions, client libraries | Use Gorbagana HTTP and WebSocket endpoints |
+| Wallets | Solana-style addresses and wallet signing flows | Backpack is the documented wallet path |
+| Tokens | 9-decimal native token unit model | Native token is GOR, not SOL |
+| Bridge | Solana token transfer concepts | Bridge between Solana GOR token and native GOR |
+
+## What works the same
+
+Gorbagana follows the SVM development model, so most Solana concepts still apply.
+
+<Cards>
+  <Card icon={<ReceiptText />} title="Accounts and transactions" href="/docs/concepts">
+    Use the same mental model for accounts, instructions, signatures, recent blockhashes, and atomic transactions.
+  </Card>
+  <Card icon={<FileCode />} title="Programs" href="/docs/build/deploy-programs">
+    Build SBF artifacts, deploy programs, inspect ProgramData, and manage upgrade authority with Solana-compatible commands.
+  </Card>
+  <Card icon={<RadioTower />} title="RPC clients" href="/docs/network/rpc">
+    Use Solana-compatible JSON-RPC clients and connection patterns against Gorbagana RPC.
+  </Card>
+  <Card icon={<Terminal />} title="CLI commands" href="/docs/reference/cli">
+    Use Solana CLI commands for config, balances, transfers, confirmations, and program deployment.
+  </Card>
+</Cards>
+
+## What changes
+
+Replace Solana network values before you sign, submit, deploy, or show links in an app.
+
+<ReferenceList columns="two" items={[
+  {
+    label: "HTTP RPC",
+    value: "https://rpc.gorbagana.wtf",
+    href: "https://rpc.gorbagana.wtf",
+    description: "Use in CLI config, clients, scripts, and deployment commands.",
+  },
+  {
+    label: "WebSocket",
+    value: "wss://rpc.gorbagana.wtf",
+    description: "Use for subscriptions such as slots, signatures, logs, and accounts.",
+  },
+  {
+    label: "Explorer",
+    value: "https://explorer.gorbagana.wtf",
+    href: "https://explorer.gorbagana.wtf",
+    description: "Use for transactions, accounts, programs, validators, and blocks.",
+  },
+  {
+    label: "Bridge",
+    value: "https://bridge.gorbagana.wtf",
+    href: "https://bridge.gorbagana.wtf",
+    description: "Move between Solana GOR token and native GOR.",
+  },
+  {
+    label: "Native token",
+    value: "GOR",
+    description: "Used for fees, transfers, and program deployments on Gorbagana.",
+  },
+  {
+    label: "Solana GOR mint",
+    value: "71Jvq4Epe2FCJ7JFSF7jLXdNk1Wy4Bhqd9iL6bEFELvg",
+    description: "Use this mint only on Solana.",
+  },
+]} />
+
+<Callout type="warn" title="Do not carry over devnet assumptions">
+  These docs cover the live Gorbagana network. Do not use Solana devnet, testnet, faucet, or SOL funding assumptions unless a Gorbagana page explicitly documents that environment.
+</Callout>
+
+## Configure tools
+
+Point Solana-compatible tools at Gorbagana before running balances, transfers, or deployments.
+
+<Tabs items={["CLI", "TypeScript"]}>
+<Tab>
+
+```bash
+solana config set --url https://rpc.gorbagana.wtf
+solana config get
+solana balance
+```
+
+</Tab>
+<Tab>
+
+```ts
+import { Connection } from "@solana/web3.js";
+
+export const connection = new Connection(
+  "https://rpc.gorbagana.wtf",
+  "confirmed",
+);
+```
+
+</Tab>
+</Tabs>
+
+Some library constants and CLI help text keep Solana names. For example, `LAMPORTS_PER_SOL` is still the base-unit constant from `@solana/web3.js`; when your client points at Gorbagana, treat that value as base units per `1 GOR`.
+
+```ts
+import { LAMPORTS_PER_SOL } from "@solana/web3.js";
+
+export function formatGor(baseUnits: number) {
+  return baseUnits / LAMPORTS_PER_SOL;
+}
+```
+
+## Programs and deployment
+
+Solana program deployment docs are useful for loader behavior, SBF builds, ProgramData, and upgrade authority. Use Gorbagana docs for network values and deployment examples.
+
+<Steps>
+<Step>
+
+### Build the program
+
+Build SBF artifacts with the same Solana-compatible toolchain.
+
+```bash
+cargo build-sbf
+```
+
+</Step>
+<Step>
+
+### Deploy to Gorbagana
+
+Deploy the compiled `.so` to Gorbagana RPC.
+
+```bash
+solana program deploy ./target/deploy/PROGRAM.so \
+  --url https://rpc.gorbagana.wtf
+```
+
+</Step>
+<Step>
+
+### Inspect the program
+
+Check ProgramData, authority, size, balance, and last deployed slot.
+
+```bash
+solana program show PROGRAM_ID \
+  --url https://rpc.gorbagana.wtf
+```
+
+</Step>
+</Steps>
+
+For Anchor projects, keep `Anchor.toml`, `declare_id!`, and generated keypairs aligned with the Program ID.
+
+<Cards>
+  <Card icon={<FileCode />} title="Deploy programs" href="/docs/build/deploy-programs">
+    Use the Solana CLI program deployment lifecycle.
+  </Card>
+  <Card icon={<Blocks />} title="Anchor projects" href="/docs/build/anchor">
+    Configure, build, deploy, update, and verify Anchor programs.
+  </Card>
+</Cards>
+
+## Wallets and funding
+
+Wallet flows still use Solana-style addresses and signatures. The documented wallet path is Backpack.
+
+Browser apps should show the network, sender, recipient, amount, and fee payer before asking a wallet to sign. Scripts should use local keypairs only on machines you control.
+
+<Cards>
+  <Card icon={<Backpack />} title="Wallet setup" href="/docs/build/wallets">
+    Configure Backpack and local keypairs.
+  </Card>
+  <Card icon={<Wallet />} title="Frontend apps" href="/docs/build/frontend">
+    Connect Backpack and send wallet-signed transactions from React.
+  </Card>
+</Cards>
+
+## Bridge and token flow
+
+GOR has two surfaces:
+
+| Direction | Source asset | Destination asset | Use |
+| --- | --- | --- | --- |
+| Solana to Gorbagana | GOR token on Solana | Native GOR on Gorbagana | Fund wallets, apps, and deployments |
+| Gorbagana to Solana | Native GOR on Gorbagana | GOR token on Solana | Move back to the Solana token |
+
+Always verify the destination address before signing. After bridging, search the destination address or transaction signature in the explorer before retrying.
+
+## When to use Solana docs
+
+Use Solana docs for general SVM concepts and tooling behavior. Use Gorbagana docs when a value, URL, token, wallet, or bridge direction depends on this network.
+
+| Use Solana docs for | Use Gorbagana docs for |
+| --- | --- |
+| Accounts, instructions, transactions, PDAs, CPIs | RPC, WebSocket, explorer, bridge, and token values |
+| SBF program structure and loader concepts | Deploy commands already pointed at Gorbagana |
+| Anchor framework concepts and account constraints | Backpack setup and Gorbagana-specific frontend examples |
+| JSON-RPC method behavior | Public endpoint, rate expectations, and explorer links |
+
+Useful upstream references:
+
+- [Solana docs](https://solana.com/docs)
+- [Solana program deployment](https://solana.com/docs/core/programs/program-deployment)
+- [Solana JSON-RPC](https://solana.com/docs/rpc)
+- [Anchor docs](https://www.anchor-lang.com/docs)
+
+## Migration checklist
+
+Use this checklist when you port a Solana app, script, or deployment flow.
+
+- Replace RPC and WebSocket URLs with Gorbagana endpoints.
+- Fund the payer with native GOR.
+- Show GOR amounts with 9 decimals in app UI.
+- Replace Solana explorer URLs with Gorbagana explorer URLs.
+- Use Backpack for wallet flows documented here.
+- Check Program IDs and upgrade authorities before deployment.
+- Search signatures in the explorer after every deploy or transfer.
+- Remove devnet, testnet, faucet, and SOL assumptions unless a Gorbagana page documents them.
+
+## Next steps
+
+<Cards>
+  <Card icon={<Braces />} title="Addresses" href="/docs/reference/addresses">
+    Copy canonical Gorbagana endpoints, token values, and links.
+  </Card>
+  <Card icon={<Search />} title="Explorer" href="/docs/network/explorer">
+    Inspect transactions, accounts, programs, and validators.
+  </Card>
+  <Card icon={<Coins />} title="Token" href="/docs/network/token">
+    Check native GOR units and the Solana token mint.
+  </Card>
+  <Card icon={<ArrowRightLeft />} title="Bridge" href="/docs/network/bridge">
+    Move GOR between Solana and Gorbagana.
+  </Card>
+</Cards>

@@ -1,0 +1,174 @@
+---
+title: Glossary
+description: Short definitions for common Gorbagana and SVM terms.
+icon: BookMarked
+---
+
+Common terms used across the Gorbagana docs.
+
+## Network terms
+
+<ReferenceList items={[
+  {
+    label: "Gorbagana",
+    value: "A live SVM network derived from Solana.",
+    copy: false,
+  },
+  {
+    label: "SVM",
+    value: "The Solana Virtual Machine runtime model used by Solana-style programs.",
+    copy: false,
+  },
+  {
+    label: "RPC endpoint",
+    value: "A JSON-RPC URL clients use to read state and send transactions.",
+    copy: false,
+  },
+  {
+    label: "WebSocket endpoint",
+    value: "A subscription endpoint for slots, logs, accounts, and signatures.",
+    copy: false,
+  },
+  {
+    label: "Explorer",
+    value: "The web interface used to inspect transactions, accounts, programs, blocks, and validators.",
+    copy: false,
+  },
+  {
+    label: "Slot",
+    value: "A unit of validator time in the ledger.",
+    copy: false,
+  },
+  {
+    label: "Block height",
+    value: "The chain's block-height counter returned by RPC.",
+    copy: false,
+  },
+  {
+    label: "Epoch",
+    value: "A longer network period that groups many slots.",
+    copy: false,
+  },
+]} />
+
+## Token terms
+
+<ReferenceList items={[
+  {
+    label: "Native GOR",
+    value: "The native Gorbagana token used for fees, transfers, and program deployments.",
+    copy: false,
+  },
+  {
+    label: "Base units",
+    value: "The smallest native GOR units. One GOR has 1,000,000,000 base units.",
+    copy: false,
+  },
+  {
+    label: "Solana GOR",
+    value: "The GOR token mint on Solana used on the bridge side.",
+    copy: false,
+  },
+  {
+    label: "Bridge",
+    value: "The app used to move between Solana GOR and native GOR.",
+    copy: false,
+  },
+]} />
+
+## Program terms
+
+<ReferenceList items={[
+  {
+    label: "Account",
+    value: "An addressable on-chain record that stores lamports, owner, executable flag, and optional data.",
+    copy: false,
+  },
+  {
+    label: "Program",
+    value: "An executable SVM account. A Solana smart contract is called a program.",
+    copy: false,
+  },
+  {
+    label: "Program ID",
+    value: "The on-chain address clients use when they call a program.",
+    copy: false,
+  },
+  {
+    label: "Program account",
+    value: "The executable account at the Program ID.",
+    copy: false,
+  },
+  {
+    label: "ProgramData account",
+    value: "The account that stores deployed executable bytes and upgrade authority metadata for an upgradeable program.",
+    copy: false,
+  },
+  {
+    label: "Upgrade authority",
+    value: "The keypair or authority that can update, transfer authority, make immutable, or close an upgradeable program.",
+    copy: false,
+  },
+  {
+    label: "PDA",
+    value: "A Program Derived Address. Programs can sign for PDAs derived from their program ID and seeds.",
+    copy: false,
+  },
+  {
+    label: "Signer",
+    value: "An account that signed the transaction message.",
+    copy: false,
+  },
+  {
+    label: "CPI",
+    value: "Cross-program invocation. One program calls another program during instruction execution.",
+    copy: false,
+  },
+]} />
+
+## Operator terms
+
+<ReferenceList items={[
+  {
+    label: "RPC node",
+    value: "A node configured to serve JSON-RPC requests for clients, apps, and scripts.",
+    copy: false,
+  },
+  {
+    label: "Validator",
+    value: "A node that participates in consensus and voting.",
+    copy: false,
+  },
+  {
+    label: "Known validator",
+    value: "A validator identity an operator configures as a trusted peer when joining the network.",
+    copy: false,
+  },
+  {
+    label: "Genesis hash",
+    value: "A network identifier used to avoid joining the wrong chain.",
+    copy: false,
+  },
+  {
+    label: "Entrypoint",
+    value: "A gossip address a node uses to discover the network.",
+    copy: false,
+  },
+]} />
+
+## Related docs
+
+<Cards>
+  <Card title="Addresses" href="/docs/reference/addresses">
+    Copy endpoints, links, token values, and community resources.
+  </Card>
+  <Card title="Developer cheat sheet" href="/docs/reference/cheat-sheet">
+    Copy common commands and network values.
+  </Card>
+  <Card title="Gorbagana and Solana" href="/docs/concepts/solana-compatibility">
+    Review what carries over from Solana and what changes on Gorbagana.
+  </Card>
+  <Card title="Deploy programs" href="/docs/build/deploy-programs">
+    Learn Program ID, ProgramData, upgrade authority, and close behavior.
+  </Card>
+</Cards>

@@ -1,0 +1,189 @@
+---
+title: CLI reference
+description: Common Solana CLI and Anchor commands for Gorbagana.
+icon: Terminal
+---
+
+import { Blocks, Braces, ClipboardList, FileCode, GitCompareArrows, Search } from 'lucide-react';
+
+Use these commands after you install the Solana CLI locally. Add `--url https://rpc.gorbagana.wtf` when you want a command to target Gorbagana without changing your global CLI config.
+
+## Network
+
+Set Gorbagana as the active RPC endpoint.
+
+```bash
+solana config set --url https://rpc.gorbagana.wtf
+solana config get
+```
+
+Check RPC health.
+
+```bash
+curl https://rpc.gorbagana.wtf \
+  -H "Content-Type: application/json" \
+  -d '{"jsonrpc":"2.0","id":1,"method":"getHealth"}'
+```
+
+Check the latest slot.
+
+```bash
+curl https://rpc.gorbagana.wtf \
+  -H "Content-Type: application/json" \
+  -d '{"jsonrpc":"2.0","id":1,"method":"getSlot"}'
+```
+
+## Wallets
+
+Use these commands to inspect the active keypair and balances.
+
+| Task | Command |
+| --- | --- |
+| Show active address | `solana address` |
+| Check active wallet balance | `solana balance` |
+| Check another wallet | `solana balance WALLET_ADDRESS` |
+| Show active config | `solana config get` |
+
+## Transfers
+
+Send native GOR.
+
+```bash
+solana transfer RECIPIENT_ADDRESS AMOUNT \
+  --url https://rpc.gorbagana.wtf
+```
+
+Confirm a transaction.
+
+```bash
+solana confirm TRANSACTION_SIGNATURE -v \
+  --url https://rpc.gorbagana.wtf
+```
+
+Uppercase values are arguments you provide. For example, `AMOUNT` is a native GOR amount such as `0.001`.
+
+## Program deployment
+
+Use these commands for the common Solana CLI program lifecycle. Read [Deploy programs](/docs/build/deploy-programs) before you update, finalize, or close a production program.
+
+Build a program.
+
+```bash
+cargo build-sbf
+```
+
+Print the generated Program ID.
+
+```bash
+solana address -k ./target/deploy/PROGRAM-keypair.json
+```
+
+Estimate account allocation cost from a byte count.
+
+```bash
+solana rent PROGRAM_SIZE_BYTES
+```
+
+Deploy the program.
+
+```bash
+solana program deploy ./target/deploy/PROGRAM.so \
+  --url https://rpc.gorbagana.wtf
+```
+
+Deploy with a specific Program ID.
+
+```bash
+solana program deploy ./target/deploy/PROGRAM.so \
+  --program-id ./target/deploy/PROGRAM-keypair.json \
+  --url https://rpc.gorbagana.wtf
+```
+
+Show deployed program metadata.
+
+```bash
+solana program show PROGRAM_ID \
+  --url https://rpc.gorbagana.wtf
+```
+
+List programs controlled by the active wallet.
+
+```bash
+solana program show --programs \
+  --url https://rpc.gorbagana.wtf
+```
+
+Download deployed program bytes.
+
+```bash
+solana program dump PROGRAM_ID ./downloaded_program.so \
+  --url https://rpc.gorbagana.wtf
+```
+
+Extend a program before a larger update.
+
+```bash
+solana program extend PROGRAM_ID ADDITIONAL_BYTES \
+  --url https://rpc.gorbagana.wtf
+```
+
+Transfer upgrade authority.
+
+```bash
+solana program set-upgrade-authority PROGRAM_ID \
+  --new-upgrade-authority ./new-authority-keypair.json \
+  --url https://rpc.gorbagana.wtf
+```
+
+Make a program immutable.
+
+```bash
+solana program set-upgrade-authority PROGRAM_ID \
+  --final \
+  --url https://rpc.gorbagana.wtf
+```
+
+Close a program.
+
+```bash
+solana program close PROGRAM_ID \
+  --bypass-warning \
+  --url https://rpc.gorbagana.wtf
+```
+
+## Anchor
+
+Use these commands for Anchor workspaces. Read [Anchor projects](/docs/build/anchor) for the full flow.
+
+| Task | Command |
+| --- | --- |
+| Check Anchor version | `anchor --version` |
+| List workspace program IDs | `anchor keys list` |
+| Sync `declare_id!` with program keypairs | `anchor keys sync` |
+| Build programs and IDLs | `anchor build` |
+| Deploy workspace programs | `anchor deploy --provider.cluster https://rpc.gorbagana.wtf` |
+| Upgrade one program | `anchor upgrade ./target/deploy/PROGRAM.so --program-id PROGRAM_ID --provider.cluster https://rpc.gorbagana.wtf` |
+| Fetch published IDL | `anchor idl fetch -o target/idl/verified.json PROGRAM_ID` |
+
+## Next steps
+
+<Cards>
+  <Card icon={<FileCode />} title="Deploy programs" href="/docs/build/deploy-programs">
+    Use the full Solana CLI deployment lifecycle.
+  </Card>
+  <Card icon={<Blocks />} title="Anchor projects" href="/docs/build/anchor">
+    Configure, build, deploy, update, and verify Anchor programs.
+  </Card>
+  <Card icon={<ClipboardList />} title="Cheat sheet" href="/docs/reference/cheat-sheet">
+    Copy endpoints, token values, commands, and links.
+  </Card>
+  <Card icon={<GitCompareArrows />} title="Gorbagana and Solana" href="/docs/concepts/solana-compatibility">
+    Review what carries over and what changes.
+  </Card>
+  <Card icon={<Search />} title="Explorer" href="/docs/network/explorer">
+    Verify CLI activity in the explorer.
+  </Card>
+  <Card icon={<Braces />} title="Addresses" href="/docs/reference/addresses">
+    Copy canonical Gorbagana endpoints and public links.
+  </Card>
+</Cards>

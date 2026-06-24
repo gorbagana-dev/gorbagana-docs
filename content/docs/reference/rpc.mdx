@@ -1,0 +1,132 @@
+---
+title: RPC reference
+description: Common Solana-compatible JSON-RPC methods for Gorbagana.
+icon: RadioTower
+---
+
+import { RadioTower, Search, Terminal } from 'lucide-react';
+
+Gorbagana exposes a Solana-compatible JSON-RPC endpoint for reads, transaction submission, and live subscriptions.
+
+<ReferenceList items={[
+  {
+    label: "HTTP RPC",
+    value: "https://rpc.gorbagana.wtf",
+    href: "https://rpc.gorbagana.wtf",
+    description: "Use this endpoint for JSON-RPC requests.",
+  },
+]} />
+
+JSON-RPC requests use HTTP `POST` with `Content-Type: application/json`.
+
+## Method map
+
+Copyable request shapes for common JSON-RPC methods.
+
+| Method | Use |
+| --- | --- |
+| `getHealth` | Check whether the RPC node is healthy |
+| `getSlot` | Read the current slot |
+| `getBalance` | Read native GOR balance in base units |
+| `getTransaction` | Fetch transaction details by signature |
+| `sendTransaction` | Submit a signed base64 transaction |
+| WebSocket subscriptions | Watch accounts, logs, signatures, or slots |
+
+## getHealth
+
+Use `getHealth` to confirm that the endpoint responds.
+
+```bash
+curl https://rpc.gorbagana.wtf \
+  -H "Content-Type: application/json" \
+  -d '{"jsonrpc":"2.0","id":1,"method":"getHealth"}'
+```
+
+Expected response:
+
+```json
+{"jsonrpc":"2.0","result":"ok","id":1}
+```
+
+## getSlot
+
+Use `getSlot` when you need a quick network progress check.
+
+```bash
+curl https://rpc.gorbagana.wtf \
+  -H "Content-Type: application/json" \
+  -d '{"jsonrpc":"2.0","id":1,"method":"getSlot"}'
+```
+
+## getBalance
+
+Use `getBalance` to read native GOR balance in base units. The example queries the system program address so you can test the method shape without using a personal wallet address.
+
+```bash
+curl https://rpc.gorbagana.wtf \
+  -H "Content-Type: application/json" \
+  -d '{"jsonrpc":"2.0","id":1,"method":"getBalance","params":["11111111111111111111111111111111"]}'
+```
+
+## getTransaction
+
+Use `getTransaction` to fetch a transaction by signature. Set `maxSupportedTransactionVersion` when you read versioned transactions.
+
+```bash
+curl https://rpc.gorbagana.wtf \
+  -H "Content-Type: application/json" \
+  -d '{"jsonrpc":"2.0","id":1,"method":"getTransaction","params":["TRANSACTION_SIGNATURE",{"encoding":"json","maxSupportedTransactionVersion":0}]}'
+```
+
+If the response is `null`, the transaction may not be finalized yet, the signature may be wrong, or the transaction may have landed on another network.
+
+## sendTransaction
+
+Use `sendTransaction` to submit a signed serialized transaction. The first parameter is a base64 encoded transaction.
+
+```bash
+curl https://rpc.gorbagana.wtf \
+  -H "Content-Type: application/json" \
+  -d '{"jsonrpc":"2.0","id":1,"method":"sendTransaction","params":["BASE64_TRANSACTION",{"encoding":"base64","skipPreflight":false}]}'
+```
+
+Most apps should use a Solana client library instead of hand-writing `sendTransaction` requests.
+
+## WebSocket subscriptions
+
+Use WebSocket subscriptions when you need live updates.
+
+<ReferenceList items={[
+  {
+    label: "WebSocket",
+    value: "wss://rpc.gorbagana.wtf",
+    description: "Use this endpoint for account, log, signature, and slot subscriptions.",
+  },
+]} />
+
+Common subscription methods include:
+
+| Method | Use |
+| --- | --- |
+| `signatureSubscribe` | Watch one transaction signature |
+| `accountSubscribe` | Watch account changes |
+| `logsSubscribe` | Watch program logs |
+| `slotSubscribe` | Watch slot progress |
+
+<Callout type="info" title="Public endpoint">
+  The public RPC is useful for getting started. Production apps with heavy read or write traffic should plan dedicated infrastructure.
+</Callout>
+
+## Next steps
+
+<Cards>
+  <Card icon={<RadioTower />} title="RPC setup" href="/docs/network/rpc">
+    Configure clients and scripts.
+  </Card>
+  <Card icon={<Terminal />} title="CLI reference" href="/docs/reference/cli">
+    Use Solana CLI commands with Gorbagana.
+  </Card>
+  <Card icon={<Search />} title="Inspect a transaction" href="/docs/guides/inspect-transaction">
+    Verify transaction signatures in the explorer.
+  </Card>
+</Cards>

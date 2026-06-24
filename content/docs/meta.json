@@ -1,0 +1,21 @@
+{
+  "pages": [
+    "---Start---",
+    "index",
+    "quickstart",
+    "...concepts",
+    "---Build---",
+    "...build",
+    "---Network---",
+    "...network",
+    "---Operators---",
+    "...operators",
+    "---Guides---",
+    "...guides",
+    "---Reference---",
+    "...reference",
+    "---Help---",
+    "troubleshooting",
+    "faq"
+  ]
+}

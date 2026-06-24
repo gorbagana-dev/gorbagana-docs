@@ -1,0 +1,204 @@
+---
+title: Troubleshooting
+description: Fix common Gorbagana wallet, bridge, RPC, transaction, and deployment issues.
+icon: TriangleAlert
+---
+
+import { Backpack, Blocks, FlaskConical, ReceiptText, Rocket, Search, ShieldCheck } from 'lucide-react';
+
+Start with these checks before retrying a wallet, bridge, RPC, transfer, or deployment action.
+
+## First checks
+
+Check the network and transaction before changing anything else.
+
+1. Confirm the RPC endpoint:
+
+   ```bash
+   solana config get
+   ```
+
+   The `RPC URL` value should match the Gorbagana endpoint in [Addresses](/docs/reference/addresses).
+
+2. Search your wallet address or transaction signature in the [Explorer](/docs/network/explorer).
+
+3. If you used the bridge, search the source and destination wallet addresses before sending another bridge transaction.
+
+<Callout type="warn" title="Check before you retry">
+  If a wallet or bridge action gave you a transaction signature, search that signature in the explorer before you submit the action again.
+</Callout>
+
+## Common issues
+
+<Accordions type="single">
+<Accordion title="Backpack shows no balance">
+
+Use this when Backpack is connected but your GOR balance looks wrong.
+
+1. Search the Backpack address in the [Explorer](/docs/network/explorer).
+2. Compare that address with the address you bridged to.
+3. Reconnect Backpack, reload the app, and confirm the wallet uses Gorbagana RPC.
+
+If the explorer shows the balance but Backpack does not, treat the explorer as the source of truth. For the full wallet setup flow, see [Wallet setup](/docs/build/wallets).
+
+</Accordion>
+<Accordion title="Bridge transaction is missing">
+
+Use this when you bridged GOR but do not see native GOR on Gorbagana.
+
+1. Open the [Bridge](/docs/network/bridge).
+2. Check the wallet address you used as the destination.
+3. Search the destination address in the [Explorer](/docs/network/explorer).
+4. Search the bridge transaction signature if the bridge UI provided one.
+5. Do not submit the same bridge transfer again until you confirm the first transaction status.
+
+If the source-side transaction succeeded but the destination balance did not update, keep the source transaction signature and destination address for support.
+
+</Accordion>
+<Accordion title="RPC request fails">
+
+Use this when CLI commands, scripts, or apps cannot read from Gorbagana.
+
+First, test the endpoint directly:
+
+```bash
+curl https://rpc.gorbagana.wtf \
+  -H "Content-Type: application/json" \
+  -d '{"jsonrpc":"2.0","id":1,"method":"getHealth"}'
+```
+
+Expected response:
+
+```json
+{"jsonrpc":"2.0","result":"ok","id":1}
+```
+
+Then check your client:
+
+| Symptom | Fix |
+| --- | --- |
+| CLI uses another cluster | Set the Solana CLI to Gorbagana RPC |
+| JavaScript app reads another endpoint | Create `Connection` with the Gorbagana RPC endpoint |
+| Request times out | Retry once, then check explorer activity before resubmitting transactions |
+| High app traffic | Use dedicated RPC infrastructure instead of relying only on the public endpoint |
+
+For browser apps, confirm `ConnectionProvider` uses the Gorbagana RPC endpoint. See [Frontend apps](/docs/build/frontend).
+
+</Accordion>
+<Accordion title="Insufficient GOR">
+
+Use this when transfers or deployments fail because the payer cannot cover fees.
+
+1. Check the active address:
+
+   ```bash
+   solana address
+   ```
+
+2. Check the balance:
+
+   ```bash
+   solana balance
+   ```
+
+3. Bridge or send native GOR to that exact address.
+
+Deployments need more GOR than a simple transfer because they create or write program accounts.
+
+</Accordion>
+<Accordion title="Blockhash expired">
+
+Use this when a wallet or script reports an expired blockhash.
+
+Create and sign the transaction again. Do not reuse an old serialized transaction.
+
+For scripts, fetch a fresh blockhash shortly before signing and sending. If the transaction was already submitted, search its signature in the explorer before retrying.
+
+</Accordion>
+<Accordion title="Transaction submitted but not found">
+
+Use this when a wallet or script shows a signature but the explorer cannot find it.
+
+1. Confirm the app or CLI used Gorbagana RPC.
+2. Wait briefly and search the exact signature again.
+3. Search the sender address for recent activity.
+4. If the signature still does not appear, rebuild and resend the transaction with a fresh blockhash.
+
+Do not assume a wallet popup means the transaction landed. The transaction is only useful after the network accepts it.
+
+</Accordion>
+<Accordion title="Anchor deploy fails">
+
+Use this when `anchor deploy` fails or deploys to the wrong target.
+
+Check the provider in `Anchor.toml`:
+
+```toml
+[provider]
+cluster = "https://rpc.gorbagana.wtf"
+wallet = "~/.config/solana/id.json"
+```
+
+Then check the keypair and program keys:
+
+```bash
+solana config get
+solana balance
+anchor keys list
+anchor keys sync
+anchor build
+```
+
+Search the failed transaction signature in the explorer. Program logs usually explain whether the failure was funding, account size, wrong program ID, or a runtime error.
+
+</Accordion>
+<Accordion title="Local tests fail before deploy">
+
+Use the [Testing](/docs/build/testing) flow to isolate the failure before touching the live network.
+
+Check:
+
+- local validator logs
+- test wallet balance
+- expected account owners
+- signer and writable account requirements
+- PDA seeds and bumps
+- instruction error output
+
+Do not submit a live deploy until local tests pass or you understand why the failure is local-only.
+
+</Accordion>
+<Accordion title="Program instruction fails after deploy">
+
+Search the transaction signature in the [Explorer](/docs/network/explorer). Review logs, account order, fee payer, and changed accounts.
+
+Then compare the failing instruction with the [Security checklist](/docs/build/security-checklist), especially account validation, signers, PDAs, CPIs, and token accounts.
+
+</Accordion>
+</Accordions>
+
+## Next steps
+
+<Cards>
+  <Card icon={<Rocket />} title="Quickstart" href="/docs/quickstart">
+    Recheck the first connection and funding path.
+  </Card>
+  <Card icon={<Backpack />} title="Wallet setup" href="/docs/build/wallets">
+    Configure Backpack and local keypairs.
+  </Card>
+  <Card icon={<Blocks />} title="Anchor projects" href="/docs/build/anchor">
+    Fix Anchor-specific deployment issues.
+  </Card>
+  <Card icon={<FlaskConical />} title="Testing" href="/docs/build/testing">
+    Debug local tests and live smoke checks.
+  </Card>
+  <Card icon={<ShieldCheck />} title="Security checklist" href="/docs/build/security-checklist">
+    Review account, signer, PDA, CPI, and authority issues.
+  </Card>
+  <Card icon={<Search />} title="Explorer" href="/docs/network/explorer">
+    Inspect signatures, logs, account changes, and fees.
+  </Card>
+  <Card icon={<ReceiptText />} title="Fees" href="/docs/network/fees">
+    Check fee payer balances and native GOR units.
+  </Card>
+</Cards>

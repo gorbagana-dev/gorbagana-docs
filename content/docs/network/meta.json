@@ -1,0 +1,6 @@
+{
+  "title": "Network",
+  "icon": "Network",
+  "defaultOpen": true,
+  "pages": ["index", "rpc", "explorer", "bridge", "token", "fees"]
+}

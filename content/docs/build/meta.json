@@ -1,0 +1,15 @@
+{
+  "title": "Build",
+  "icon": "Wrench",
+  "defaultOpen": true,
+  "pages": [
+    "index",
+    "setup",
+    "testing",
+    "security-checklist",
+    "frontend",
+    "anchor",
+    "deploy-programs",
+    "wallets"
+  ]
+}

@@ -1,0 +1,6 @@
+{
+  "title": "Operators",
+  "icon": "ServerCog",
+  "defaultOpen": false,
+  "pages": ["index", "rpc-node", "validator", "operations"]
+}
