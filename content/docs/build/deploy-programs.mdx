@@ -45,16 +45,16 @@ Prepare these before you build or deploy.
 Check these pages before you send a live deploy or upgrade transaction.
 
 <Cards>
-  <Card icon={<FlaskConical />} title="Testing" href="/docs/build/testing">
+  <Card icon={<FlaskConical />} title="Testing" href="/build/testing">
     Run local checks and a small live smoke test.
   </Card>
-  <Card icon={<ShieldCheck />} title="Security checklist" href="/docs/build/security-checklist">
+  <Card icon={<ShieldCheck />} title="Security checklist" href="/build/security-checklist">
     Review accounts, signers, PDAs, CPIs, tokens, and authority.
   </Card>
-  <Card icon={<Backpack />} title="Wallet setup" href="/docs/build/wallets">
+  <Card icon={<Backpack />} title="Wallet setup" href="/build/wallets">
     Confirm the deployment wallet and native GOR funding.
   </Card>
-  <Card icon={<Search />} title="Explorer" href="/docs/network/explorer">
+  <Card icon={<Search />} title="Explorer" href="/network/explorer">
     Know where to inspect deployment signatures and program accounts.
   </Card>
 </Cards>
@@ -191,7 +191,7 @@ solana program deploy ./target/deploy/hello_gorbagana.so \
 
 ## Inspect the program
 
-After deployment, open the [Explorer](/docs/network/explorer). Search for the program ID to confirm that the program account exists. Search for the transaction signature to review logs and fees.
+After deployment, open the [Explorer](/network/explorer). Search for the program ID to confirm that the program account exists. Search for the transaction signature to review logs and fees.
 
 You can also confirm the deployment transaction from the CLI:
 
@@ -344,7 +344,7 @@ Run:
 solana config get
 ```
 
-The `RPC URL` value should match the Gorbagana endpoint in [Addresses](/docs/reference/addresses).
+The `RPC URL` value should match the Gorbagana endpoint in [Addresses](/reference/addresses).
 
 </Accordion>
 <Accordion title="The compiled file path is wrong">
@@ -441,28 +441,28 @@ If uploads keep expiring, check RPC health and retry from a more stable network 
 ## Next steps
 
 <Cards>
-  <Card icon={<CheckCircle2 />} title="Concepts" href="/docs/concepts">
+  <Card icon={<CheckCircle2 />} title="Concepts" href="/concepts">
     Review accounts, programs, transactions, and fees.
   </Card>
-  <Card icon={<FlaskConical />} title="Testing" href="/docs/build/testing">
+  <Card icon={<FlaskConical />} title="Testing" href="/build/testing">
     Run local checks and a small live smoke test.
   </Card>
-  <Card icon={<ShieldCheck />} title="Security checklist" href="/docs/build/security-checklist">
+  <Card icon={<ShieldCheck />} title="Security checklist" href="/build/security-checklist">
     Review the pre-deploy account and authority checklist.
   </Card>
-  <Card icon={<Search />} title="Explorer" href="/docs/network/explorer">
+  <Card icon={<Search />} title="Explorer" href="/network/explorer">
     Inspect program accounts and deployment transactions.
   </Card>
-  <Card icon={<Terminal />} title="CLI reference" href="/docs/reference/cli">
+  <Card icon={<Terminal />} title="CLI reference" href="/reference/cli">
     Copy common CLI commands for Gorbagana.
   </Card>
-  <Card icon={<ReceiptText />} title="Fees" href="/docs/network/fees">
+  <Card icon={<ReceiptText />} title="Fees" href="/network/fees">
     Understand why deployments need a funded keypair.
   </Card>
-  <Card icon={<Blocks />} title="Anchor projects" href="/docs/build/anchor">
+  <Card icon={<Blocks />} title="Anchor projects" href="/build/anchor">
     Deploy with Anchor workspace commands.
   </Card>
-  <Card icon={<TriangleAlert />} title="Troubleshooting" href="/docs/troubleshooting">
+  <Card icon={<TriangleAlert />} title="Troubleshooting" href="/troubleshooting">
     Fix failed deploys, missing funds, and wrong-network issues.
   </Card>
 </Cards>

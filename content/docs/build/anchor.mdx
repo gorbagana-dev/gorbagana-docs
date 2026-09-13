@@ -12,7 +12,7 @@ Deploy an existing Anchor workspace to Gorbagana. You'll configure `Anchor.toml`
   This page covers Gorbagana RPC, native GOR funding, deployment verification, and explorer links. Use the [official Anchor docs](https://www.anchor-lang.com/docs) for framework syntax, account constraints, tests, CLI flags, and general client APIs.
 </Callout>
 
-Before a live deploy, run the [Testing](/docs/build/testing) flow and review the [Security checklist](/docs/build/security-checklist).
+Before a live deploy, run the [Testing](/build/testing) flow and review the [Security checklist](/build/security-checklist).
 
 ## Command reference
 
@@ -42,7 +42,7 @@ Prepare the workspace before you deploy.
 | Explorer | `https://explorer.gorbagana.wtf` |
 
 <Callout type="info" title="Anchor wraps the same loader model">
-  Anchor deploys SVM programs through the same upgradeable loader used by `solana program deploy`. Use [Deploy programs](/docs/build/deploy-programs) when you need lower-level authority, close, or bytecode-management details.
+  Anchor deploys SVM programs through the same upgradeable loader used by `solana program deploy`. Use [Deploy programs](/build/deploy-programs) when you need lower-level authority, close, or bytecode-management details.
 </Callout>
 
 ## Configure Anchor.toml
@@ -177,7 +177,7 @@ Save both values. Your clients call the Program ID. The signature lets you inspe
 
 Verify the deployed program before you wire clients to it.
 
-Open the [Explorer](/docs/network/explorer) and search for the deployment signature or Program ID. Check the transaction status, fee payer, logs, and program account.
+Open the [Explorer](/network/explorer) and search for the deployment signature or Program ID. Check the transaction status, fee payer, logs, and program account.
 
 Confirm the signature from the CLI.
 
@@ -369,37 +369,37 @@ If the `Authority` field is missing, the program is immutable. If an authority i
 ## Next steps
 
 <Cards>
-  <Card icon={<FileCode />} title="Deploy programs" href="/docs/build/deploy-programs">
+  <Card icon={<FileCode />} title="Deploy programs" href="/build/deploy-programs">
     Use the lower-level Solana CLI deployment lifecycle.
   </Card>
-  <Card icon={<FlaskConical />} title="Testing" href="/docs/build/testing">
+  <Card icon={<FlaskConical />} title="Testing" href="/build/testing">
     Run local checks and a small live smoke test.
   </Card>
-  <Card icon={<ShieldCheck />} title="Security checklist" href="/docs/build/security-checklist">
+  <Card icon={<ShieldCheck />} title="Security checklist" href="/build/security-checklist">
     Review accounts, signers, PDAs, CPIs, tokens, and authority.
   </Card>
-  <Card icon={<Braces />} title="Anchor client" href="/docs/guides/anchor-client">
+  <Card icon={<Braces />} title="Anchor client" href="/guides/anchor-client">
     Load the IDL and call the deployed program from TypeScript.
   </Card>
-  <Card icon={<Blocks />} title="Concepts" href="/docs/concepts">
+  <Card icon={<Blocks />} title="Concepts" href="/concepts">
     Review accounts, programs, transactions, fees, and network surfaces.
   </Card>
-  <Card icon={<Search />} title="Explorer" href="/docs/network/explorer">
+  <Card icon={<Search />} title="Explorer" href="/network/explorer">
     Inspect deployment signatures, program accounts, and logs.
   </Card>
-  <Card icon={<Terminal />} title="CLI reference" href="/docs/reference/cli">
+  <Card icon={<Terminal />} title="CLI reference" href="/reference/cli">
     Copy common Solana CLI commands for Gorbagana.
   </Card>
-  <Card icon={<Backpack />} title="Wallet setup" href="/docs/build/wallets">
+  <Card icon={<Backpack />} title="Wallet setup" href="/build/wallets">
     Configure Backpack and local keypairs for Gorbagana.
   </Card>
-  <Card icon={<CheckCircle2 />} title="Fees" href="/docs/network/fees">
+  <Card icon={<CheckCircle2 />} title="Fees" href="/network/fees">
     Understand why program deployments require a funded keypair.
   </Card>
-  <Card icon={<ReceiptText />} title="Cheat sheet" href="/docs/reference/cheat-sheet">
+  <Card icon={<ReceiptText />} title="Cheat sheet" href="/reference/cheat-sheet">
     Copy endpoints, token values, and deployment commands.
   </Card>
-  <Card icon={<TriangleAlert />} title="Troubleshooting" href="/docs/troubleshooting">
+  <Card icon={<TriangleAlert />} title="Troubleshooting" href="/troubleshooting">
     Fix failed deploys, missing balances, and wrong-network issues.
   </Card>
 </Cards>

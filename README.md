@@ -4,7 +4,7 @@ Documentation site for Gorbagana builders, validators, and users.
 
 ## Features
 
-- **Docs-first routing:** the root page redirects to `/docs`.
+- **Docs at the site root:** the overview is `/`; other pages are `/quickstart`, `/build`, and so on.
 - **MDX content:** pages live in `content/docs` and are indexed by Fumadocs.
 - **Local search:** the app exposes a local search API for the docs shell.
 - **Dark theme:** the UI is styled to match the Gorbagana website.
@@ -16,7 +16,7 @@ npm install
 npm run dev
 ```
 
-Open [http://localhost:3000/docs](http://localhost:3000/docs).
+Open [http://localhost:3000](http://localhost:3000).
 
 ## Environment Variables
 
@@ -37,7 +37,7 @@ The production domain should point directly to this app. The main website can li
 ## Project structure
 
 - `content/docs`: MDX documentation pages.
-- `src/app/docs`: Fumadocs layout and page routes.
+- `src/app/(docs)`: Fumadocs layout and page routes.
 - `src/app/api/search/route.ts`: local search API.
 - `src/lib/source.ts`: Fumadocs content source loader.
 

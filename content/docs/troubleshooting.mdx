@@ -18,9 +18,9 @@ Check the network and transaction before changing anything else.
    solana config get
    ```
 
-   The `RPC URL` value should match the Gorbagana endpoint in [Addresses](/docs/reference/addresses).
+   The `RPC URL` value should match the Gorbagana endpoint in [Addresses](/reference/addresses).
 
-2. Search your wallet address or transaction signature in the [Explorer](/docs/network/explorer).
+2. Search your wallet address or transaction signature in the [Explorer](/network/explorer).
 
 3. If you used the bridge, search the source and destination wallet addresses before sending another bridge transaction.
 
@@ -35,20 +35,20 @@ Check the network and transaction before changing anything else.
 
 Use this when Backpack is connected but your GOR balance looks wrong.
 
-1. Search the Backpack address in the [Explorer](/docs/network/explorer).
+1. Search the Backpack address in the [Explorer](/network/explorer).
 2. Compare that address with the address you bridged to.
 3. Reconnect Backpack, reload the app, and confirm the wallet uses Gorbagana RPC.
 
-If the explorer shows the balance but Backpack does not, treat the explorer as the source of truth. For the full wallet setup flow, see [Wallet setup](/docs/build/wallets).
+If the explorer shows the balance but Backpack does not, treat the explorer as the source of truth. For the full wallet setup flow, see [Wallet setup](/build/wallets).
 
 </Accordion>
 <Accordion title="Bridge transaction is missing">
 
 Use this when you bridged GOR but do not see native GOR on Gorbagana.
 
-1. Open the [Bridge](/docs/network/bridge).
+1. Open the [Bridge](/network/bridge).
 2. Check the wallet address you used as the destination.
-3. Search the destination address in the [Explorer](/docs/network/explorer).
+3. Search the destination address in the [Explorer](/network/explorer).
 4. Search the bridge transaction signature if the bridge UI provided one.
 5. Do not submit the same bridge transfer again until you confirm the first transaction status.
 
@@ -82,7 +82,7 @@ Then check your client:
 | Request times out | Retry once, then check explorer activity before resubmitting transactions |
 | High app traffic | Use dedicated RPC infrastructure instead of relying only on the public endpoint |
 
-For browser apps, confirm `ConnectionProvider` uses the Gorbagana RPC endpoint. See [Frontend apps](/docs/build/frontend).
+For browser apps, confirm `ConnectionProvider` uses the Gorbagana RPC endpoint. See [Frontend apps](/build/frontend).
 
 </Accordion>
 <Accordion title="Insufficient GOR">
@@ -154,7 +154,7 @@ Search the failed transaction signature in the explorer. Program logs usually ex
 </Accordion>
 <Accordion title="Local tests fail before deploy">
 
-Use the [Testing](/docs/build/testing) flow to isolate the failure before touching the live network.
+Use the [Testing](/build/testing) flow to isolate the failure before touching the live network.
 
 Check:
 
@@ -170,9 +170,9 @@ Do not submit a live deploy until local tests pass or you understand why the fai
 </Accordion>
 <Accordion title="Program instruction fails after deploy">
 
-Search the transaction signature in the [Explorer](/docs/network/explorer). Review logs, account order, fee payer, and changed accounts.
+Search the transaction signature in the [Explorer](/network/explorer). Review logs, account order, fee payer, and changed accounts.
 
-Then compare the failing instruction with the [Security checklist](/docs/build/security-checklist), especially account validation, signers, PDAs, CPIs, and token accounts.
+Then compare the failing instruction with the [Security checklist](/build/security-checklist), especially account validation, signers, PDAs, CPIs, and token accounts.
 
 </Accordion>
 </Accordions>
@@ -180,25 +180,25 @@ Then compare the failing instruction with the [Security checklist](/docs/build/s
 ## Next steps
 
 <Cards>
-  <Card icon={<Rocket />} title="Quickstart" href="/docs/quickstart">
+  <Card icon={<Rocket />} title="Quickstart" href="/quickstart">
     Recheck the first connection and funding path.
   </Card>
-  <Card icon={<Backpack />} title="Wallet setup" href="/docs/build/wallets">
+  <Card icon={<Backpack />} title="Wallet setup" href="/build/wallets">
     Configure Backpack and local keypairs.
   </Card>
-  <Card icon={<Blocks />} title="Anchor projects" href="/docs/build/anchor">
+  <Card icon={<Blocks />} title="Anchor projects" href="/build/anchor">
     Fix Anchor-specific deployment issues.
   </Card>
-  <Card icon={<FlaskConical />} title="Testing" href="/docs/build/testing">
+  <Card icon={<FlaskConical />} title="Testing" href="/build/testing">
     Debug local tests and live smoke checks.
   </Card>
-  <Card icon={<ShieldCheck />} title="Security checklist" href="/docs/build/security-checklist">
+  <Card icon={<ShieldCheck />} title="Security checklist" href="/build/security-checklist">
     Review account, signer, PDA, CPI, and authority issues.
   </Card>
-  <Card icon={<Search />} title="Explorer" href="/docs/network/explorer">
+  <Card icon={<Search />} title="Explorer" href="/network/explorer">
     Inspect signatures, logs, account changes, and fees.
   </Card>
-  <Card icon={<ReceiptText />} title="Fees" href="/docs/network/fees">
+  <Card icon={<ReceiptText />} title="Fees" href="/network/fees">
     Check fee payer balances and native GOR units.
   </Card>
 </Cards>

@@ -21,29 +21,29 @@ Use Backpack for wallet-based activity on Gorbagana. For deployments and scripts
 </Accordion>
 <Accordion title="Why does Backpack show a different balance than the explorer?">
 
-Backpack can show stale state or a different selected network. Search the same wallet address in the [Explorer](/docs/network/explorer). If the explorer shows the expected native GOR balance, reconnect Backpack, reload the app, and confirm the wallet uses Gorbagana RPC.
+Backpack can show stale state or a different selected network. Search the same wallet address in the [Explorer](/network/explorer). If the explorer shows the expected native GOR balance, reconnect Backpack, reload the app, and confirm the wallet uses Gorbagana RPC.
 
 </Accordion>
 <Accordion title="Can I use normal Solana wallet adapter code?">
 
-Yes. Use the normal Solana wallet adapter provider flow, but set the connection endpoint to Gorbagana RPC. Wallet Standard wallets such as Backpack are detected automatically. See [Frontend apps](/docs/build/frontend).
+Yes. Use the normal Solana wallet adapter provider flow, but set the connection endpoint to Gorbagana RPC. Wallet Standard wallets such as Backpack are detected automatically. See [Frontend apps](/build/frontend).
 
 </Accordion>
 <Accordion title="What RPC endpoint should I use?">
 
-Use the public endpoint from [RPC setup](/docs/network/rpc). For raw JSON-RPC request shapes, see [RPC methods](/docs/reference/rpc).
+Use the public endpoint from [RPC setup](/network/rpc). For raw JSON-RPC request shapes, see [RPC methods](/reference/rpc).
 
 For high-traffic apps, plan for dedicated infrastructure instead of relying only on a shared public endpoint.
 
 </Accordion>
 <Accordion title="How do I get native GOR?">
 
-Use the [Bridge](/docs/network/bridge) to move GOR from Solana to native GOR on Gorbagana.
+Use the [Bridge](/network/bridge) to move GOR from Solana to native GOR on Gorbagana.
 
 </Accordion>
 <Accordion title="What explorer should I use?">
 
-Use the [Explorer](/docs/network/explorer).
+Use the [Explorer](/network/explorer).
 
 Search by transaction signature, wallet address, program address, or validator page.
 
@@ -63,19 +63,19 @@ Use the GitHub organization link in the docs sidebar or ask in Telegram.
 ## Next steps
 
 <Cards>
-  <Card icon={<Rocket />} title="Quickstart" href="/docs/quickstart">
+  <Card icon={<Rocket />} title="Quickstart" href="/quickstart">
     Connect to Gorbagana for the first time.
   </Card>
-  <Card icon={<Wrench />} title="Build setup" href="/docs/build/setup">
+  <Card icon={<Wrench />} title="Build setup" href="/build/setup">
     Configure local tooling.
   </Card>
-  <Card icon={<Backpack />} title="Wallet setup" href="/docs/build/wallets">
+  <Card icon={<Backpack />} title="Wallet setup" href="/build/wallets">
     Configure Backpack and local keypairs.
   </Card>
-  <Card icon={<MonitorSmartphone />} title="Frontend apps" href="/docs/build/frontend">
+  <Card icon={<MonitorSmartphone />} title="Frontend apps" href="/build/frontend">
     Connect Backpack from a React app.
   </Card>
-  <Card icon={<TriangleAlert />} title="Troubleshooting" href="/docs/troubleshooting">
+  <Card icon={<TriangleAlert />} title="Troubleshooting" href="/troubleshooting">
     Fix common wallet, bridge, RPC, and deploy issues.
   </Card>
 </Cards>
